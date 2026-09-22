@@ -1,0 +1,316 @@
+/* jev-tech 코스 공유 스타일시트. 모든 레슨·참조 문서가 이 파일을 링크한다.
+   Tufte 계열: 넉넉한 여백, 세리프 본문, 사이드노트, 절제된 색. */
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg: #fffdf8;
+  --fg: #1d1d1b;
+  --muted: #6b6b66;
+  --rule: #e2ded3;
+  --accent: #a33d12;        /* 강조·링크 */
+  --accent-soft: #f6e6dc;
+  --jev: #1f5f8b;           /* System One / Jev 표시 */
+  --jev-soft: #e3eef6;
+  --llm: #7a6a2b;           /* LLM 표시 */
+  --llm-soft: #f3eedb;
+  --ok: #2e7d4f;
+  --ok-soft: #e2f2e8;
+  --bad: #b3261e;
+  --bad-soft: #f9e3e1;
+  --code-bg: #f4f1ea;
+  --serif: 'Noto Serif KR', Georgia, serif;
+  --sans: 'Noto Sans KR', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  --measure: 36rem;
+  --side: 15rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #151513;
+    --fg: #ece8df;
+    --muted: #a09c93;
+    --rule: #2f2e2a;
+    --accent: #e0855a;
+    --accent-soft: #33221a;
+    --jev: #7eb6de;
+    --jev-soft: #16283a;
+    --llm: #d1bb6d;
+    --llm-soft: #2c2716;
+    --ok: #7fcf9f;
+    --ok-soft: #17302200;
+    --bad: #f08a83;
+    --bad-soft: #3a1c1a;
+    --code-bg: #1f1e1b;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #151513; --fg: #ece8df; --muted: #a09c93; --rule: #2f2e2a;
+  --accent: #e0855a; --accent-soft: #33221a; --jev: #7eb6de; --jev-soft: #16283a;
+  --llm: #d1bb6d; --llm-soft: #2c2716; --ok: #7fcf9f; --ok-soft: #173022;
+  --bad: #f08a83; --bad-soft: #3a1c1a; --code-bg: #1f1e1b;
+}
+
+* { box-sizing: border-box; }
+html { font-size: 17px; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--serif);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 레이아웃: 본문 열 + 오른쪽 사이드노트 열 */
+.page {
+  max-width: calc(var(--measure) + var(--side) + 6rem);
+  margin: 0 auto;
+  padding: 3rem 1rem 6rem;
+}
+article > * { max-width: var(--measure); }
+article > .wide, article > figure.wide { max-width: none; clear: both; }
+
+header.lesson-head { margin-bottom: 3rem; }
+.kicker {
+  font-family: var(--sans);
+  font-size: .8rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+h1 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 2.1rem;
+  line-height: 1.25;
+  margin: .4rem 0 .8rem;
+}
+h2 {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 1.25rem;
+  margin: 3rem 0 .8rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+}
+h3 {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 1.02rem;
+  margin: 2rem 0 .5rem;
+}
+p { margin: 0 0 1.1rem; }
+.lede { font-size: 1.15rem; color: var(--muted); }
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { text-decoration-thickness: 2px; }
+small, .small { font-size: .85rem; color: var(--muted); }
+strong { font-weight: 600; }
+mark { background: var(--accent-soft); color: inherit; padding: 0 .15em; }
+
+/* 사이드노트 */
+.sidenote {
+  /* article 폭 = 본문 열 + 여백 + 사이드 열. aside는 article의 직계 자식으로 두고
+     오른쪽 열에 float 시킨다. 본문(p)은 max-width로 왼쪽 열에 머문다. */
+  float: right;
+  clear: right;
+  width: var(--side);
+  margin-right: 0;
+  margin-top: .2rem;
+  margin-bottom: 1rem;
+  font-family: var(--sans);
+  font-size: .8rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.sidenote .n { color: var(--accent); font-weight: 600; margin-right: .3em; }
+sup.n { color: var(--accent); font-weight: 600; font-family: var(--sans); font-size: .7em; }
+
+/* 태그 */
+.tag {
+  display: inline-block;
+  font-family: var(--sans);
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  padding: .1em .5em;
+  border-radius: 3px;
+  vertical-align: middle;
+}
+.tag-jev { background: var(--jev-soft); color: var(--jev); }
+.tag-llm { background: var(--llm-soft); color: var(--llm); }
+.tag-official { background: var(--accent-soft); color: var(--accent); }
+.tag-indep { background: var(--code-bg); color: var(--muted); }
+
+/* 콜아웃 */
+.callout {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  padding: .9rem 1.1rem;
+  margin: 1.4rem 0;
+  font-family: var(--sans);
+  font-size: .93rem;
+}
+.callout.win { border-color: var(--ok); background: var(--ok-soft); }
+.callout.mission { border-color: var(--jev); background: var(--jev-soft); }
+.callout h4 { margin: 0 0 .3rem; font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; }
+
+/* 표 */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-family: var(--sans);
+  font-size: .9rem;
+  margin: 1.2rem 0 1.6rem;
+}
+th, td { text-align: left; vertical-align: top; padding: .55rem .6rem; border-bottom: 1px solid var(--rule); }
+th { font-weight: 600; font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+td.jev-col { background: var(--jev-soft); }
+td.llm-col { background: var(--llm-soft); }
+
+/* 코드 */
+code, pre {
+  font-family: var(--mono);
+  font-size: .84rem;
+}
+code { background: var(--code-bg); padding: .1em .35em; border-radius: 3px; }
+pre {
+  background: var(--code-bg);
+  padding: 1rem 1.1rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  line-height: 1.55;
+  margin: 1rem 0 1.4rem;
+}
+pre code { background: none; padding: 0; }
+
+/* JSON 주석 달기 */
+.annot { position: relative; }
+.annot .k { color: var(--jev); }
+.annot .s { color: var(--accent); }
+.annot .num { color: var(--llm); }
+.annot .c { color: var(--muted); font-style: italic; }
+.annot .hl { background: var(--accent-soft); border-radius: 2px; }
+
+/* 두 열 비교 카드 */
+.compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1.4rem 0;
+  font-family: var(--sans);
+  font-size: .9rem;
+}
+.compare .card { padding: 1rem 1.1rem; border-radius: 6px; border: 1px solid var(--rule); }
+.compare .card.llm { background: var(--llm-soft); }
+.compare .card.jev { background: var(--jev-soft); }
+.compare .card h4 { margin: 0 0 .5rem; font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; }
+.compare .card ul { margin: 0; padding-left: 1.1rem; }
+.compare .card li { margin-bottom: .3rem; }
+
+/* 흐름 다이어그램 */
+.flow {
+  display: flex;
+  align-items: stretch;
+  gap: .5rem;
+  font-family: var(--sans);
+  font-size: .82rem;
+  margin: 1.2rem 0 1.6rem;
+}
+.flow .box {
+  flex: 1;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: .7rem .8rem;
+  background: var(--code-bg);
+}
+.flow .box.model { background: var(--jev-soft); border-color: var(--jev); }
+.flow .box.model.llm { background: var(--llm-soft); border-color: var(--llm); }
+.flow .arrow { align-self: center; color: var(--muted); font-size: 1.2rem; }
+.flow .box b { display: block; margin-bottom: .2rem; }
+
+/* 퀴즈 (quiz.js가 채움) */
+.quiz {
+  font-family: var(--sans);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 1.1rem 1.2rem 1rem;
+  margin: 1.4rem 0;
+  background: color-mix(in srgb, var(--bg) 92%, var(--code-bg));
+}
+.quiz .q { font-weight: 600; margin: 0 0 .7rem; }
+.quiz .q .idx { color: var(--muted); font-weight: 500; margin-right: .4em; }
+.quiz .opts { display: grid; gap: .45rem; margin: 0; padding: 0; list-style: none; }
+.quiz .opts button {
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  font-size: .92rem;
+  padding: .55rem .8rem;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.quiz .opts button:hover:not([disabled]) { border-color: var(--accent); }
+.quiz .opts button[disabled] { cursor: default; }
+.quiz .opts button.correct { border-color: var(--ok); background: var(--ok-soft); }
+.quiz .opts button.wrong { border-color: var(--bad); background: var(--bad-soft); }
+.quiz .fb { margin: .8rem 0 0; font-size: .88rem; padding: .6rem .8rem; border-radius: 6px; display: none; }
+.quiz .fb.show { display: block; }
+.quiz .fb.ok { background: var(--ok-soft); color: var(--fg); border-left: 3px solid var(--ok); }
+.quiz .fb.bad { background: var(--bad-soft); color: var(--fg); border-left: 3px solid var(--bad); }
+.quiz .fill { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+.quiz .fill input {
+  font: inherit; font-family: var(--mono); font-size: .9rem;
+  padding: .45rem .6rem; border: 1px solid var(--rule); border-radius: 6px;
+  background: var(--bg); color: var(--fg); min-width: 12rem;
+}
+.quiz .fill button {
+  font: inherit; font-size: .88rem; padding: .45rem .9rem;
+  border: 1px solid var(--accent); border-radius: 6px; background: var(--accent); color: #fff; cursor: pointer;
+}
+.quiz .fill input.correct { border-color: var(--ok); background: var(--ok-soft); }
+.quiz .fill input.wrong { border-color: var(--bad); background: var(--bad-soft); }
+
+.quiz-summary {
+  font-family: var(--sans);
+  border: 1px dashed var(--rule);
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+  margin: 2rem 0;
+}
+.quiz-summary .bar { height: 8px; background: var(--code-bg); border-radius: 4px; overflow: hidden; margin: .5rem 0; }
+.quiz-summary .bar > div { height: 100%; background: var(--ok); width: 0; transition: width .3s; }
+
+/* 하단 내비 */
+footer.lesson-foot {
+  margin-top: 4rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--rule);
+  font-family: var(--sans);
+  font-size: .88rem;
+  color: var(--muted);
+}
+footer.lesson-foot nav { display: flex; flex-wrap: wrap; gap: 1.2rem; margin-bottom: 1rem; }
+
+/* 인쇄 */
+@media print {
+  html { font-size: 11pt; }
+  .page { padding: 0; max-width: none; }
+  .sidenote { float: none; width: auto; margin: .3rem 0 .6rem 1.5rem; }
+  .quiz .opts button { border: 1px solid #999; }
+  a { color: inherit; }
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: .75em; color: #666; }
+}
+
+/* 좁은 화면 */
+@media (max-width: 64rem) {
+  .sidenote { float: none; width: auto; margin: .4rem 0 1rem 0; padding-left: .8rem; border-left: 2px solid var(--rule); }
+  .compare { grid-template-columns: 1fr; }
+  .flow { flex-direction: column; }
+  .flow .arrow { transform: rotate(90deg); align-self: flex-start; margin-left: 1rem; }
+}

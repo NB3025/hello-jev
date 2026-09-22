@@ -7,6 +7,10 @@
 ### TypeSafe 공식 개념 문서 (1차 출처)
 - [Docs: System One 개념](https://docs.typesafe.ai/concepts/system-one) · [State](https://docs.typesafe.ai/concepts/state) · [How to build with System One](https://docs.typesafe.ai/concepts/how-to-build-with-system-one)
   모델 클래스 정의, state에 무엇을 넣는가, 하네스 안에서의 역할. Use for: 원리 설명 레슨과 state 설계 레슨의 기준.
+- [Docs: Introduction](https://docs.typesafe.ai/introduction) · [Quick start](https://docs.typesafe.ai/introduction/quickstart)
+  "mismatch" 프레이밍, 원자 질문 원칙, 실제 요청/응답 JSON 예제. Use for: 레슨 1의 근거. 미러 001/002에 본문 있음.
+- [Docs: AI primer (machine-learning-primer)](https://docs.typesafe.ai/introduction/machine-learning-primer)
+  RLHF/RLVR/RLCD 비교, "Machine Native Intelligence", 캘리브레이션 정의, mode dropping. **RLCD에 대한 유일한 공식 설명.** Use for: 원리 레슨. 미러 010에 본문 있음.
 - [Docs: Primitives — Choice / Score / Noul](https://docs.typesafe.ai/primitives)
   Choice ≤255 옵션, Score 2~10단계, Noul은 confidence 없음, 컨텍스트 약 32K. Use for: 질문 유형 선택 규칙.
 - [Docs: Confidence](https://docs.typesafe.ai/confidence)
