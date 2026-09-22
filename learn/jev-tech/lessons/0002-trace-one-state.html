@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>레슨 0002 · state 하나가 분류되는 흐름을 손으로 따라가기</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+<div class="page">
+<article>
+
+<header class="lesson-head">
+  <div class="kicker">jev-tech · 레슨 0002 · 약 30분</div>
+  <h1>state 하나가 분류되는 흐름을<br>손으로 따라가기</h1>
+  <p class="lede">지원 티켓 한 장이 들어와서 "billing 팀으로, 환불 요청 있음"이라는 결정이 나오기까지, 여섯 칸을 한 칸씩 밟는다. 어디까지가 코드 일이고 어디부터가 Jev 일인지 손가락으로 가리킬 수 있게 되는 것이 목표다.</p>
+</header>
+
+<div class="callout mission">
+  <h4>왜 이 레슨인가</h4>
+  레슨 1 뒤에 "state가 주어지고 분류되는 흐름이 아직 잘 안 잡힌다"는 질문이 나왔다. 정확한 지적이다. 레슨 1은 요청·응답의 <em>모양</em>만 보여줬고, 그 사이에서 <em>무슨 일이 일어나는지</em>와 <em>응답을 받은 코드가 무엇을 하는지</em>는 비어 있었다. 오늘 그 빈칸을 채운다.
+</div>
+
+<div class="callout win">
+  <h4>오늘의 한 가지 승리</h4>
+  티켓 세 종류를 시뮬레이터에 넣어 보고, 어느 티켓이 왜 사람 검토로 가는지 <strong>코드의 어느 줄에서 갈렸는지</strong> 짚어 말할 수 있다.
+</div>
+
+<h2>1. 먼저 그림 하나</h2>
+
+<p>TypeSafe가 권하는 아키텍처는 딱 한 문장이다: <mark>평범한 소프트웨어 워크플로를 만들고, AI가 필요한 자리에만 System One을 끼워 넣는다.</mark><sup class="n">1</sup> 제어 흐름·결정적 규칙·부작용(이메일 발송, 환불 실행)은 전부 코드가 가진다. Jev는 "이 문장은 어느 팀 얘기인가" 같은 상식 판단 한 칸만 맡는다.</p>
+<aside class="sidenote"><span class="n">1</span> "Summary: build a normal software workflow and insert System One only where AI is needed." — <a href="https://docs.typesafe.ai/concepts/how-to-build-with-system-one">How to build with TypeSafe</a>. 이 레슨의 시나리오·질문·분기 코드는 모두 이 페이지의 <code>triage_ticket.py</code> 예제를 단순화한 것이다.</aside>
+
+<div class="flow wide">
+  <div class="box"><b>① 원본 데이터</b>티켓, 고객, 정책… 앱이 가진 전부</div>
+  <div class="arrow">→</div>
+  <div class="box"><b>② state 조립</b>코드가 걸러내고 필요한 것만 이름 붙여 담음</div>
+  <div class="arrow">→</div>
+  <div class="box"><b>③ 요청</b>state 1개 + 질문 N개</div>
+  <div class="arrow">→</div>
+  <div class="box model"><b>④ Jev</b>질문마다 옵션 위에 확률 배분, 병렬</div>
+  <div class="arrow">→</div>
+  <div class="box"><b>⑤ 응답</b>choice/score/noul + 확률 + confidence</div>
+  <div class="arrow">→</div>
+  <div class="box"><b>⑥ 코드 분기</b>임계값 비교, 가중 합산, 라우팅</div>
+</div>
+
+<p>여섯 칸 중 <strong>Jev가 하는 일은 ④ 하나</strong>다. ②와 ⑥이 설계의 대부분이고, 그것은 전부 코드(=내가 정하는 것)다. 이 비율을 몸에 새기는 것이 오늘의 절반이다.</p>
+
+<h2>2. ④에서 실제로 무슨 일이 일어나나</h2>
+
+<p>레슨 1에서 나온 질문을 여기서 정면으로 답한다. Jev는 트랜스포머 신경망이다. state와 질문 텍스트(instructions, criteria)를 함께 한 번 읽는다.<sup class="n">2</sup> LLM이라면 이 지점에서 첫 토큰을 뽑고, 그 토큰을 다시 입력에 붙여 두 번째 토큰을 뽑는 식으로 수십~수백 번 신경망을 돈다. Jev는 그렇게 하지 않는다. <strong>내가 criteria에 적어 준 옵션들</strong>(billing / orders / account)이 곧 후보이고, 한 번의 계산으로 그 후보들 위에 확률을 나눠 준다. 옵션이 셋이면 숫자 셋, 질문이 다섯이면 그 다섯 묶음이 동시에 나온다.</p>
+<aside class="sidenote"><span class="n">2</span> 구조 세부(병렬 샘플러, RLCD 학습)는 레슨 6에서. 지금 필요한 것은 "후보를 만들어내는 게 아니라 <em>내가 준 후보에 점수를 매긴다</em>"는 한 문장이다. 공식: "Because every output is constrained to the supplied options, the model returns a full probability distribution over those options rather than inventing a value outside the schema." — How to build.</aside>
+
+<p>그래서 출력 토큰이 거의 없고 값싸다. 응답 JSON은 모델이 "쓴" 것이 아니라, 그 확률표를 서버가 서식에 맞춰 적어 준 것이다. Thinking 단계도 없다. 판단이 여러 요인에 걸쳐 있으면 모델이 생각을 더 하는 게 아니라, <strong>내가 질문을 여러 개로 쪼개서</strong> ④에 병렬로 넣는다. 이것이 레슨 3의 주제다.</p>
+
+<h2>3. 시뮬레이터: 티켓 세 장, 여섯 칸</h2>
+
+<p>아래에서 티켓을 고르고 "다음"을 눌러 한 칸씩 이동해 보라. 셋 다 같은 질문 세 개를 받지만, ④의 확률 모양이 다르고, 그래서 ⑥에서 다른 곳으로 간다. 특히 <strong>티켓 C</strong>가 어디서 갈리는지 보라.<sup class="n">3</sup></p>
+<aside class="sidenote"><span class="n">3</span> ④의 막대 값은 학습용 추정치다. 실제 Jev를 호출한 결과가 아니다. 실제 값은 모델 버전과 질문 문구에 따라 달라지므로, 숫자가 아니라 <em>분포의 모양이 분기를 어떻게 바꾸는지</em>에 집중하라.</aside>
+
+<div class="flow-sim wide" id="sim"></div>
+
+<h2>4. ⑥의 코드를 읽어 보기</h2>
+
+<p>시뮬레이터의 마지막 칸이 따라간 코드다. 공식 예제를 세 질문 버전으로 줄였다.<sup class="n">4</sup> 코드를 쓰라는 것이 아니다. <strong>어느 줄이 어떤 응답 필드를 읽는지</strong>만 따라가라.</p>
+<aside class="sidenote"><span class="n">4</span> 원본 <code>triage_ticket.py</code>는 스팸 신호 Noul 세 개를 코드에서 0.45/0.30/0.25 가중 합산하는 부분도 있다. 그 "여러 답을 코드에서 합치기"는 레슨 3에서 다시 만난다.</aside>
+
+<pre class="annot wide"><code><span class="c"># ② 코드: 결정적 규칙 먼저. 닫힌 티켓은 모델을 부르지도 않는다.</span>
+if ticket.status == "closed": return "no_action"
+
+<span class="c"># ② 코드: 질문에 필요한 필드만 골라 state 조립</span>
+state = { "ticket": {...}, "customer": {...} }
+
+<span class="c"># ③ 요청 → ④ Jev → ⑤ 응답</span>
+answers = client.system_one(state=state, questions=questions).answers
+
+<span class="c"># ⑥ 코드: 먼저 "모르겠다" 신호를 잡는다</span>
+if answers[<span class="s">"topic"</span>].<span class="hl">confidence</span> &lt; 0.75:          <span class="c">← 분포가 퍼져 있으면 사람에게</span>
+    return route_to_human_review(ticket)
+
+<span class="c"># ⑥ 코드: 답(choice)으로 분기. 미리 물어둔 답은 이 경로에서만 쓴다</span>
+if answers[<span class="s">"topic"</span>].<span class="hl">choice</span> == "billing":
+    return route_to_billing(ticket,
+        refund_requested = answers[<span class="s">"refund_requested"</span>].<span class="hl">noul</span> &gt;= 0.7)
+
+if answers[<span class="s">"topic"</span>].choice == "orders":
+    return route_to_orders(ticket)
+
+<span class="c"># ⑥ 코드: Score는 score와 confidence를 함께 본다</span>
+priority = "high" if (answers[<span class="s">"frustration"</span>].<span class="hl">score</span> &gt;= 1.5
+                      and answers[<span class="s">"frustration"</span>].<span class="hl">confidence</span> &gt;= 0.7) else "normal"
+return route_to_account_support(ticket, priority=priority)</code></pre>
+
+<p>세 가지를 보라. 첫째, <strong>첫 번째 if는 답이 아니라 confidence를 본다.</strong> "무엇"보다 "행동해도 되는가"를 먼저 묻는다.<sup class="n">5</sup> 둘째, <strong>0.75, 0.7, 1.5는 전부 코드에 있다.</strong> Jev는 임계값을 모른다. 셋째, <code>refund_requested</code>는 세 티켓 모두에게 물었지만 <strong>billing 경로에서만 읽는다.</strong> 미리 물어두고 코드가 필요할 때만 쓰는 것을 공식 문서는 speculative fan-out이라 부른다.</p>
+<aside class="sidenote"><span class="n">5</span> "High confidence: act automatically. Medium: proceed with caution. Low: do not act. Where you draw those boundaries depends on the stakes." — <a href="https://docs.typesafe.ai/confidence">Confidence</a>. 임계값을 어떻게 정하는지는 레슨 4.</aside>
+
+<h2>5. 연습</h2>
+<p class="small">시뮬레이터를 다시 열지 말고 기억으로. 틀리면 해설을 읽고, 그 다음에 시뮬레이터로 확인하라.</p>
+
+<div class="quiz" data-answer="c" data-explain="닫힌 티켓 걸러내기, 필요한 필드만 고르기, state 조립은 모두 ② 코드의 일이다. Jev는 ④에서 판정만 한다. '무엇을 보여줄지'는 항상 코드가 정한다.">
+  <p class="q">고객 객체에는 주문 20건이 있는데 state에는 배송 중인 2건만 들어갔다. 이 걸러내기는 누가 했나?</p>
+  <ul class="opts">
+    <li data-key="a">Jev — 질문과 무관한 필드를 스스로 무시한다</li>
+    <li data-key="b">API — 토큰 예산에 맞춰 자동으로 잘라 준다</li>
+    <li data-key="c">코드 — state 조립 단계에서 개발자가 골랐다</li>
+  </ul>
+</div>
+
+<div class="quiz" data-answer="a" data-explain="후보(옵션)는 criteria로 내가 정의한다. Jev는 그 후보들 위에 확률을 배분할 뿐, 새 후보를 만들어내지 않는다. 그래서 스키마 밖 값이 절대 안 나온다.">
+  <p class="q">④에서 Jev가 <code>topic</code> 질문에 답할 때, 후보 billing / orders / account는 어디서 왔나?</p>
+  <ul class="opts">
+    <li data-key="a">내가 요청의 criteria에 적어 보낸 것이다</li>
+    <li data-key="b">Jev가 state를 읽고 스스로 후보를 만들었다</li>
+    <li data-key="c">TypeSafe가 미리 정해 둔 표준 분류 체계다</li>
+  </ul>
+</div>
+
+<div class="quiz" data-answer="b" data-explain="topic의 choice는 billing이지만 confidence 0.31이 첫 if의 0.75 문턱을 넘지 못한다. 답이 있어도 분포가 퍼져 있으면 코드는 '모르겠다'로 취급해 사람에게 보낸다.">
+  <p class="q">티켓 C의 응답: <code>topic.choice = "billing"</code>, <code>topic.confidence = 0.31</code>, <code>refund_requested.noul = 0.62</code>. 코드는 어디로 보내나?</p>
+  <ul class="opts">
+    <li data-key="a">route_to_billing — choice가 billing이므로</li>
+    <li data-key="b">route_to_human_review — confidence가 0.75 미만</li>
+    <li data-key="c">route_to_account_support — 기본 경로로 떨어진다</li>
+  </ul>
+</div>
+
+<div class="quiz" data-answer="c" data-explain="0.7은 코드에 적힌 숫자다. Jev는 noul 0.96이라는 확률만 돌려줬고, 그것을 '요청함'으로 볼지 말지는 코드의 비교식이 정했다. Jev 응답 어디에도 '참/거짓'은 없다.">
+  <p class="q">티켓 A에서 <code>refund_requested.noul = 0.96</code>이 "환불 요청 있음"으로 처리됐다. "있음"이라고 결정한 것은?</p>
+  <ul class="opts">
+    <li data-key="a">Jev — noul이 0.5를 넘으면 참으로 반환한다</li>
+    <li data-key="b">API — 응답에 true/false 필드가 함께 온다</li>
+    <li data-key="c">코드 — noul &gt;= 0.7 비교식이 결정했다</li>
+  </ul>
+</div>
+
+<div class="quiz" data-answer="a" data-explain="세 질문은 모두 ④에서 병렬로 답이 나왔다. 코드는 billing 경로에서 refund_requested만 읽고, frustration은 그 경로에서 읽지 않았을 뿐이다. 답은 있었지만 쓰지 않았다. 이것이 speculative fan-out이다.">
+  <p class="q">티켓 A는 billing으로 갔다. 그럼 <code>frustration</code> 질문의 답은?</p>
+  <ul class="opts">
+    <li data-key="a">나왔지만 이 경로의 코드가 읽지 않았다</li>
+    <li data-key="b">billing으로 갈 것을 알고 Jev가 건너뛰었다</li>
+    <li data-key="c">코드가 두 번째 요청으로 따로 물어야 한다</li>
+  </ul>
+</div>
+
+<div class="quiz" data-answer="b" data-explain="LLM은 토큰을 하나 뽑을 때마다 신경망을 다시 돌리며 답 텍스트를 만든다. Jev는 한 번 읽고 내가 준 옵션들 위에 확률을 동시에 배분한다. 후보를 '만드는' 것과 후보에 '점수 매기는' 것의 차이다.">
+  <p class="q">④에서 LLM과 Jev의 결정적 차이를 한 문장으로 고르면?</p>
+  <ul class="opts">
+    <li data-key="a">LLM은 영어만, Jev는 여러 언어를 함께 읽는다</li>
+    <li data-key="b">LLM은 답을 토큰으로 만들고, Jev는 준 옵션에 확률을 매긴다</li>
+    <li data-key="c">LLM은 한 질문씩, Jev는 여러 질문을 순서대로 처리한다</li>
+  </ul>
+</div>
+
+<h3>기억으로 채우기</h3>
+
+<div class="quiz" data-fill="confidence" data-explain="코드의 첫 if는 답(choice)이 아니라 confidence를 본다. '무엇'보다 '행동해도 되는가'를 먼저 묻는 것이 공식 패턴이다.">
+  <p class="q">⑥의 첫 번째 if문이 비교하는 응답 필드는?</p>
+  <div class="fill"><input placeholder="필드 이름"><button type="button">확인</button></div>
+</div>
+
+<div class="quiz" data-fill="4|④|넷|네|4번" data-explain="여섯 칸 중 Jev가 하는 일은 ④ 판정 하나다. 나머지 다섯 칸은 코드(또는 전송)다. 설계의 대부분이 ②와 ⑥에 있다.">
+  <p class="q">여섯 칸(①~⑥) 중 Jev가 실제로 일하는 칸은 몇 번인가? (숫자 하나)</p>
+  <div class="fill"><input placeholder="숫자"><button type="button">확인</button></div>
+</div>
+
+<div class="quiz-summary"></div>
+
+<h2>6. 말로 설명해 보기</h2>
+<p>다음 셋을 소리 내어 말한 뒤, 그 문장을 나에게 보내 달라. 잘 됐으면 첫 학습 기록으로 남긴다.</p>
+<ol>
+  <li>여섯 칸을 순서대로 말하고, 각 칸이 <strong>코드 일인지 Jev 일인지</strong> 붙여라.</li>
+  <li>티켓 C가 사람 검토로 간 이유를 <strong>응답 필드 이름을 써서</strong> 한 문장으로.</li>
+  <li>"Jev가 왜 출력이 싼가"를 ④의 관점에서 두 문장으로.</li>
+</ol>
+
+<h2>오늘 읽을 1차 자료</h2>
+<p><a href="https://docs.typesafe.ai/concepts/how-to-build-with-system-one"><strong>How to build with TypeSafe</strong></a>(5분) 한 페이지. 특히 "Three software architectures" 절과 마지막 <code>triage_ticket.py</code>. <a href="../reference/readings-ko-0002.html"><strong>한글 번역본</strong></a>에는 State 페이지와 Confidence 페이지 번역도 함께 넣었다. Confidence는 레슨 4 전에 다시 읽게 된다.</p>
+
+<div class="callout">
+  <h4>질문은 언제든</h4>
+  시뮬레이터의 어떤 칸이 여전히 안개 속이면 그 칸 번호를 말해 달라. 그 칸만 다른 예제로 다시 만든다.
+</div>
+
+<h2>다음 레슨</h2>
+<p><strong>0003 · 하나의 판단을 여러 질문으로 쪼개기.</strong> "이 티켓은 스팸인가?" 한 질문이 왜 위험한지(정상 메일 39%를 차단한 사례), 세 개의 Noul로 쪼개고 코드에서 가중 합산하면 왜 나아지는지. 오늘 본 ⑥의 코드에 스팸 신호 세 줄이 추가된다.</p>
+
+</article>
+
+<footer class="lesson-foot">
+  <nav>
+    <a href="0001-system-one-vs-llm.html">← 레슨 0001</a>
+    <a href="../reference/request-response-shape.html">참조: 요청/응답 치트시트</a>
+    <a href="../reference/readings-ko-0002.html">읽을 자료 한글 번역</a>
+    <a href="../MISSION.md">미션</a>
+  </nav>
+  <div>레슨 0002 · 작성 2026-09-22 · 시나리오는 공식 How-to-build 예제를 단순화. ④의 수치는 학습용 추정치.</div>
+</footer>
+</div>
+
+<script src="../assets/quiz.js"></script>
+<script src="../assets/flow-sim.js"></script>
+<script>
+(function () {
+  const questions = {
+    topic: {
+      type: 'choice',
+      instructions: 'Which team should handle ticket.message?',
+      criteria: {
+        billing: 'Charges, invoices, refunds, or subscriptions',
+        orders: 'Order status, delivery, cancellation, or returns',
+        account: 'Login, profile, permissions, or security'
+      }
+    },
+    refund_requested: {
+      type: 'noul',
+      instructions: 'Does the customer explicitly request a refund or credit?'
+    },
+    frustration: {
+      type: 'score',
+      instructions: 'How frustrated does the customer appear?',
+      criteria: ['Calm and matter-of-fact', 'Frustrated but civil', 'Very angry or threatening to leave']
+    }
+  };
+  const legend = { '0': 'Calm and matter-of-fact', '1': 'Frustrated but civil', '2': 'Very angry or threatening to leave' };
+
+  function decide(a) {
+    const out = [];
+    const c1 = a.topic.confidence < 0.75;
+    out.push({ check: 'answers["topic"].confidence < 0.75', result: c1, note: `confidence = ${a.topic.confidence.toFixed(2)}. 분포가 퍼져 있으면 답이 있어도 사람에게.` });
+    if (c1) { out.push({ check: 'answers["topic"].choice == "billing"', result: null }); out.push({ check: 'answers["topic"].choice == "orders"', result: null }); out.push({ check: 'frustration.score >= 1.5 and confidence >= 0.7', result: null }); return out; }
+    const c2 = a.topic.choice === 'billing';
+    out.push({ check: 'answers["topic"].choice == "billing"', result: c2, note: c2 ? `refund_requested.noul = ${a.refund_requested.noul.toFixed(2)} ≥ 0.7 → ${a.refund_requested.noul >= 0.7 ? '환불 요청 있음' : '환불 요청 없음'} 으로 넘김` : '' });
+    if (c2) { out.push({ check: 'answers["topic"].choice == "orders"', result: null }); out.push({ check: 'frustration.score >= 1.5 and confidence >= 0.7', result: null }); return out; }
+    const c3 = a.topic.choice === 'orders';
+    out.push({ check: 'answers["topic"].choice == "orders"', result: c3 });
+    if (c3) { out.push({ check: 'frustration.score >= 1.5 and confidence >= 0.7', result: null }); return out; }
+    const c4 = a.frustration.score >= 1.5 && a.frustration.confidence >= 0.7;
+    out.push({ check: 'frustration.score >= 1.5 and confidence >= 0.7', result: c4, note: `score = ${a.frustration.score.toFixed(2)}, confidence = ${a.frustration.confidence.toFixed(2)} → priority ${c4 ? 'high' : 'normal'}` });
+    return out;
+  }
+
+  const scenarios = [
+    {
+      id: 'A', label: '티켓 A · 중복 결제',
+      raw: { ticket: { id: 'T-5081', status: 'open', message: 'I was charged twice for order A-104. Please refund the duplicate. This is the second time this has happened.', sender: { display_name: 'Mina Park', email: 'mina@example.com' }, links: [] },
+             customer: { id: 'C-77', plan: 'pro', orders: [ { id: 'A-104', status: 'delivered', charges: 2 }, { id: 'A-097', status: 'delivered' }, { id: 'A-110', status: 'shipped' } ] } },
+      rawNote: '주문 3건, 발신자 정보, 링크… 질문에 필요 없는 것이 섞여 있다.',
+      stateSteps: ['status가 closed가 아니므로 계속 (결정적 규칙)', '주문 중 delivered가 아닌 것만 골라 open_orders로', '메시지·플랜·open_orders에 이름을 붙여 객체로 묶음', '발신자 이메일, 링크는 이번 질문에 불필요 → 제외'],
+      state: { ticket: { message: 'I was charged twice for order A-104. Please refund the duplicate. This is the second time this has happened.' }, customer: { plan: 'pro', open_orders: [ { id: 'A-110', status: 'shipped' } ] } },
+      questions,
+      answers: {
+        topic: { choice: 'billing', probabilities: { billing: 0.91, orders: 0.07, account: 0.02 }, confidence: 0.87 },
+        refund_requested: { noul: 0.96 },
+        frustration: { score: 1.0, legend, probabilities: { '0': 0.15, '1': 0.70, '2': 0.15 }, confidence: 0.61 }
+      },
+      inputTokens: 210,
+      decide, finalRoute: 'route_to_billing(ticket, refund_requested=True)',
+      finalNote: 'confidence 0.87 ≥ 0.75 통과 → choice billing → refund noul 0.96 ≥ 0.7. frustration은 물었지만 이 경로에서는 읽지 않았다.'
+    },
+    {
+      id: 'B', label: '티켓 B · 배송 문의',
+      raw: { ticket: { id: 'T-5082', status: 'open', message: 'Hi, where is my order B-220? Tracking has not updated in 4 days. Thanks.', sender: { display_name: 'Jun Lee', email: 'jun@example.com' }, links: ['https://track.example/B-220'] },
+             customer: { id: 'C-12', plan: 'free', orders: [ { id: 'B-220', status: 'shipped' }, { id: 'B-201', status: 'delivered' } ] } },
+      rawNote: '메시지 톤은 차분하고, 배송 중인 주문이 하나 있다.',
+      stateSteps: ['status open → 계속', 'open_orders = [B-220]', '메시지·플랜·open_orders만 담음', '링크는 이번 질문과 무관 → 제외'],
+      state: { ticket: { message: 'Hi, where is my order B-220? Tracking has not updated in 4 days. Thanks.' }, customer: { plan: 'free', open_orders: [ { id: 'B-220', status: 'shipped' } ] } },
+      questions,
+      answers: {
+        topic: { choice: 'orders', probabilities: { billing: 0.05, orders: 0.88, account: 0.07 }, confidence: 0.82 },
+        refund_requested: { noul: 0.06 },
+        frustration: { score: 0.28, legend, probabilities: { '0': 0.75, '1': 0.22, '2': 0.03 }, confidence: 0.71 }
+      },
+      inputTokens: 180,
+      decide, finalRoute: 'route_to_orders(ticket)',
+      finalNote: 'confidence 0.82 통과 → billing 아님 → orders. refund noul 0.06은 나왔지만 어느 경로도 읽지 않았다.'
+    },
+    {
+      id: 'C', label: '티켓 C · 애매한 경우',
+      raw: { ticket: { id: 'T-5083', status: 'open', message: 'My account got charged after I cancelled but now I cannot even log in to check what happened.', sender: { display_name: 'Sora Kim', email: 'sora@example.com' }, links: [] },
+             customer: { id: 'C-31', plan: 'pro', orders: [] } },
+      rawNote: '결제 얘기이면서 로그인 문제이기도 하다. 사람이 봐도 팀을 하나로 고르기 어렵다.',
+      stateSteps: ['status open → 계속', 'open_orders = [] (없음)', '메시지·플랜만 담음'],
+      state: { ticket: { message: 'My account got charged after I cancelled but now I cannot even log in to check what happened.' }, customer: { plan: 'pro', open_orders: [] } },
+      questions,
+      answers: {
+        topic: { choice: 'billing', probabilities: { billing: 0.48, orders: 0.08, account: 0.44 }, confidence: 0.31 },
+        refund_requested: { noul: 0.62 },
+        frustration: { score: 1.12, legend, probabilities: { '0': 0.12, '1': 0.64, '2': 0.24 }, confidence: 0.55 }
+      },
+      inputTokens: 190,
+      decide, finalRoute: 'route_to_human_review(ticket)',
+      finalNote: 'choice는 billing이지만 billing 0.48 vs account 0.44로 분포가 갈려 confidence 0.31. 첫 if에서 사람 검토로. "모르겠다"를 코드가 존중한 것이다.'
+    }
+  ];
+  FlowSim.mount('#sim', scenarios);
+})();
+</script>
+</body>
+</html>

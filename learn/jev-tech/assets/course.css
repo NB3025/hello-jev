@@ -314,3 +314,51 @@ footer.lesson-foot nav { display: flex; flex-wrap: wrap; gap: 1.2rem; margin-bot
   .flow { flex-direction: column; }
   .flow .arrow { transform: rotate(90deg); align-self: flex-start; margin-left: 1rem; }
 }
+
+/* ── 결정 흐름 시뮬레이터 (flow-sim.js) ── */
+.flow-sim { font-family: var(--sans); font-size: .9rem; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; margin: 1.4rem 0 2rem; background: var(--bg); }
+.flow-sim .sim-top { padding: .8rem .9rem .6rem; border-bottom: 1px solid var(--rule); background: var(--code-bg); }
+.flow-sim .sim-scn { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: .6rem; }
+.flow-sim .sim-scn .scn { font: inherit; font-size: .82rem; padding: .35rem .7rem; border: 1px solid var(--rule); border-radius: 999px; background: var(--bg); color: var(--fg); cursor: pointer; }
+.flow-sim .sim-scn .scn.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.flow-sim .sim-steps { display: flex; gap: .3rem; flex-wrap: wrap; }
+.flow-sim .sim-steps .stp { font: inherit; font-size: .76rem; padding: .3rem .55rem; border: 1px solid transparent; border-radius: 5px; background: transparent; color: var(--muted); cursor: pointer; }
+.flow-sim .sim-steps .stp.done { color: var(--fg); }
+.flow-sim .sim-steps .stp.on { border-color: var(--jev); background: var(--jev-soft); color: var(--jev); font-weight: 600; }
+.flow-sim .sim-body { padding: 1rem .9rem .6rem; min-height: 14rem; }
+.flow-sim .sim-h { display: flex; flex-direction: column; gap: .15rem; margin-bottom: .8rem; }
+.flow-sim .sim-h b { font-size: 1rem; }
+.flow-sim .sim-h span { color: var(--muted); font-size: .84rem; }
+.flow-sim pre { margin: 0 0 .6rem; font-size: .78rem; max-height: 22rem; }
+.flow-sim .note { color: var(--muted); font-size: .82rem; margin: .4rem 0 0; }
+.flow-sim .mini { font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: .3rem; }
+.flow-sim .two { display: grid; grid-template-columns: 1fr 1.3fr; gap: 1rem; }
+.flow-sim .two ul { margin: 0; padding-left: 1.1rem; font-size: .86rem; }
+.flow-sim .two li { margin-bottom: .4rem; }
+.flow-sim .qgrid { display: grid; gap: .8rem; }
+.flow-sim .qcard { border: 1px solid var(--rule); border-radius: 6px; padding: .7rem .8rem; background: var(--bg); }
+.flow-sim .qhead { display: flex; gap: .5rem; align-items: baseline; flex-wrap: wrap; margin-bottom: .5rem; }
+.flow-sim .qhead .qtext { color: var(--muted); font-size: .84rem; }
+.flow-sim .bar-row { display: grid; grid-template-columns: minmax(6rem, 40%) 1fr 3rem; gap: .5rem; align-items: center; font-size: .82rem; margin: .25rem 0; }
+.flow-sim .bar-row .lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.flow-sim .bar-row.win .lbl { font-weight: 700; color: var(--jev); }
+.flow-sim .bar { height: 10px; background: var(--code-bg); border-radius: 5px; overflow: hidden; }
+.flow-sim .bar .fill { height: 100%; background: var(--jev); border-radius: 5px; transition: width .5s ease; }
+.flow-sim .bar .fill.dim { background: var(--rule); }
+.flow-sim .bar-row.win .fill { background: var(--accent); }
+.flow-sim .val { font-family: var(--mono); font-size: .78rem; text-align: right; font-variant-numeric: tabular-nums; }
+.flow-sim .qfoot { margin-top: .5rem; font-size: .84rem; color: var(--muted); }
+.flow-sim .checks { margin: 0; padding-left: 1.4rem; }
+.flow-sim .checks li { margin-bottom: .55rem; padding: .45rem .6rem; border-radius: 5px; border: 1px solid var(--rule); }
+.flow-sim .checks li.hit { border-color: var(--ok); background: var(--ok-soft); }
+.flow-sim .checks li.miss { opacity: .85; }
+.flow-sim .checks li.skip { opacity: .45; }
+.flow-sim .checks .res { margin-left: .6rem; font-size: .8rem; color: var(--muted); }
+.flow-sim .checks li.hit .res { color: var(--ok); font-weight: 600; }
+.flow-sim .cnote { font-size: .8rem; color: var(--muted); margin-top: .2rem; }
+.flow-sim .final { margin-top: .9rem; padding: .7rem .8rem; border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 4px; }
+.flow-sim .sim-nav { display: flex; justify-content: space-between; align-items: center; padding: .6rem .9rem; border-top: 1px solid var(--rule); background: var(--code-bg); }
+.flow-sim .sim-nav button { font: inherit; font-size: .86rem; padding: .4rem .9rem; border: 1px solid var(--accent); border-radius: 6px; background: var(--accent); color: #fff; cursor: pointer; }
+.flow-sim .sim-nav button[disabled] { opacity: .35; cursor: default; }
+.flow-sim .sim-nav .pos { color: var(--muted); font-size: .82rem; font-variant-numeric: tabular-nums; }
+@media (max-width: 40rem) { .flow-sim .two { grid-template-columns: 1fr; } .flow-sim .bar-row { grid-template-columns: minmax(5rem, 45%) 1fr 2.6rem; } }

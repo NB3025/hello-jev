@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>읽을 자료(한글) · 레슨 0002 · State · How to build · Confidence</title>
+<link rel="stylesheet" href="../assets/course.css">
+<style>
+  .src { font-family: var(--sans); font-size: .82rem; color: var(--muted); border: 1px solid var(--rule); border-radius: 6px; padding: .6rem .9rem; margin: 0 0 1.4rem; }
+  .src b { color: var(--fg); }
+  .orig { color: var(--muted); font-size: .85rem; font-style: italic; }
+  .toc { font-family: var(--sans); font-size: .9rem; }
+  .toc li { margin-bottom: .3rem; }
+  hr.doc { border: 0; border-top: 2px solid var(--rule); margin: 3.5rem 0 2.5rem; }
+  .arch { display: grid; grid-template-columns: repeat(3, 1fr); gap: .8rem; font-family: var(--sans); font-size: .86rem; margin: 1.2rem 0; }
+  .arch div { border: 1px solid var(--rule); border-radius: 6px; padding: .8rem .9rem; }
+  .arch div.hi { background: var(--jev-soft); border-color: var(--jev); }
+  .arch b { display: block; margin-bottom: .3rem; }
+  @media (max-width: 40rem) { .arch { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="page">
+<article>
+<header class="lesson-head">
+  <div class="kicker">jev-tech · 읽을 자료 · 한글 번역</div>
+  <h1>레슨 0002의 1차 자료, 한글로</h1>
+  <p class="lede">TypeSafe 공식 문서 세 페이지: State(입력 재료), How to build(아키텍처와 전체 예제), Confidence(언제 행동하는가). 원문의 구조를 유지했고 코드는 원문 그대로 두었다.</p>
+</header>
+
+<div class="src"><b>번역 원칙.</b> 원문 우선. 의역한 곳은 괄호에 원어. 역주는 <span class="tag tag-indep">역주</span>. 기준은 GitHub 미러 <a href="https://github.com/thiagoadril/typesafe-docs">thiagoadril/typesafe-docs</a>(2026-09-14~19 추출본).</div>
+
+<ul class="toc">
+  <li><a href="#state">1. State</a> — 2분</li>
+  <li><a href="#build">2. How to build with TypeSafe</a> — 5분 · 레슨 2의 핵심 자료</li>
+  <li><a href="#conf">3. Confidence</a> — 3분 · 레슨 4 선행 자료</li>
+</ul>
+
+<hr class="doc" id="state">
+<h2>1. State</h2>
+<div class="src">원문: <a href="https://docs.typesafe.ai/concepts/state">docs.typesafe.ai/concepts/state</a> · 미러 <a href="https://github.com/thiagoadril/typesafe-docs/blob/main/docs/004-state-typesafe-ai.md">004-state</a></div>
+
+<p class="orig">What state is, how to structure it, and how to give a System One model the context it needs.</p>
+<p><strong>state가 무엇인지, 어떻게 구조화하는지, System One 모델에 필요한 맥락을 어떻게 주는지.</strong></p>
+
+<p><strong>State</strong>는 System One 모델에게 평가하라고 넘기는 내용이다. 지원 메시지일 수도, 텍스트 한 구절일 수도, 애플리케이션의 현재 상태일 수도 있다. API 요청의 <code>state</code> 필드에, 답을 원하는 질문들과 함께 넣는다.</p>
+<p>각 요청은 하나의 state를 하나 이상의 질문에 대해 평가한다. 모든 질문은 같은 state를 보고, 독립적으로 평가된다. 한 요청에 Choice, Score, Noul 질문을 섞을 수 있다.</p>
+
+<h3>state는 문자열 하나만큼 단순할 수 있다</h3>
+<pre><code>state = "My card was charged twice."</code></pre>
+<p>state는 관련 맥락, 예시, 그리고 질문에 답하는 데 도움이 되는 정보를 담은 JSON 객체나 배열일 수도 있다. <mark>state를 "전문가 패널에게 판단을 요청하기 전에 제시하는 자료"라고 생각하라.</mark> Python에서는 문자열·딕셔너리·리스트를 <code>client.system_one(state=...)</code>에 그대로 넘긴다.</p>
+
+<table>
+  <thead><tr><th>형식</th><th>쓸 때</th><th>예</th></tr></thead>
+  <tbody>
+    <tr><td>문자열</td><td>메시지, 기사, 구절</td><td><code>"My card was charged twice."</code></td></tr>
+    <tr><td>객체</td><td>이름 있는 필드, 관련 레코드, 애플리케이션 상태</td><td><code>{"message": "My card was charged twice.", "order_id": "A-104"}</code></td></tr>
+    <tr><td>배열</td><td>메시지나 레코드의 순서열</td><td><code>["Hi", "My customer number is TS1337.", "My card was charged twice."]</code></td></tr>
+  </tbody>
+</table>
+
+<p>대부분의 요청에는 객체를 써서 state의 각 부분에 설명적인 이름이 붙고 관계가 분명하게 남도록 하라. 유즈케이스가 단순하고 텍스트 한 조각만 필요하면 문자열이 적합하다.</p>
+<p>Jev는 텍스트만 받는다. state는 문자열, JSON 객체, 또는 텍스트 값 배열이어야 한다. 이미지·오디오·비디오는 (아직) 지원하지 않는다. <mark>Jev의 주 학습 언어는 영어다. CJK 문자를 포함한 다른 언어도 받지만 현재 정확도가 낮다.</mark> <a href="https://docs.typesafe.ai/models#language-support">Models</a>를 보라.</p>
+
+<p><strong>지원 대화를 state로:</strong></p>
+<pre><code>{
+  "ticket": {
+    "subject": "Duplicate charge",
+    "messages": [
+      {"from": "customer", "text": "I was charged twice for order A-104. Please refund the duplicate."},
+      {"from": "support", "text": "We are checking the charges."}
+    ]
+  },
+  "order": {
+    "id": "A-104",
+    "charges": [
+      {"amount_usd": 49, "status": "captured"},
+      {"amount_usd": 49, "status": "captured"}
+    ]
+  },
+  "refund_policy": "Duplicate charges are eligible for a refund."
+}</code></pre>
+<p>이 객체는 대화·주문·정책을 담고 있지만 하나의 state다. 결정이 그 부분들을 비교해야 한다면 관련 정보를 함께 넣어라.</p>
+
+<h3>내용과 질문을 분리하라</h3>
+<p>state는 내용과 뒷받침하는 사실을 담는다. <a href="https://docs.typesafe.ai/primitives">질문</a>은 그 자료에 대해 모델이 내려야 할 판단을 정의한다. 예를 들어 환불 요청과 정책은 state에 두고, 고객이 환불을 요청했는지와 정책이 환불을 지지하는지를 물어라.</p>
+
+<hr class="doc" id="build">
+<h2>2. How to build with TypeSafe</h2>
+<div class="src">원문: <a href="https://docs.typesafe.ai/concepts/how-to-build-with-system-one">docs.typesafe.ai/concepts/how-to-build-with-system-one</a> · 미러 <a href="https://github.com/thiagoadril/typesafe-docs/blob/main/docs/012-how-to-build-with-typesafe-typesafe-ai.md">012-how-to-build</a></div>
+
+<p class="orig">Design AI-powered software by keeping code in control and giving System One narrow, structured decisions.</p>
+<p><strong>코드가 통제권을 유지하고 System One에게는 좁고 구조화된 결정만 맡기는 방식으로 AI 기반 소프트웨어를 설계하기.</strong></p>
+
+<p>System One은 에이전트가 아니라 AI 기반 소프트웨어를 만들기 위한 TypeSafe의 모델이다. 코드를 생성하지도, 스스로 다음 행동을 고르지도 않는다. 소프트웨어에 내장되는 AI 프리미티브를 제공하므로, 코드가 통제권을 유지하고 모델은 비정형 데이터에 대한 상식 판단을 처리한다.</p>
+
+<p><strong>요약: 평범한 소프트웨어 워크플로를 만들고, AI가 필요한 곳에만 System One을 끼워 넣어라.</strong></p>
+<ul>
+  <li>제어 흐름, 결정적 규칙, 부작용(side effect)은 코드에 둔다.</li>
+  <li>넓은 판단을 명시적 instructions와 criteria가 있는 좁고 타입 있는 질문으로 쪼갠다.</li>
+  <li>각 질문에는 필요한 맥락만 준다.</li>
+  <li>확률과 confidence로 행동하거나, 검토를 요청하거나, 에스컬레이션한다.</li>
+  <li>독립적인 질문들을 함께 묻고, 답은 코드에서 조합한다.</li>
+</ul>
+
+<h3>세 가지 소프트웨어 아키텍처</h3>
+<p>TypeSafe는 <strong>AI 기반 소프트웨어</strong>를 위해 설계됐다. 코드가 워크플로를 소유하고 AI가 좁고 구조화된 결정을 처리하는 구조다.</p>
+<div class="arch">
+  <div><b>전통적 소프트웨어</b>단순한 소프트웨어 프리미티브로 만든 복잡한 결정 트리. 각 프리미티브가 신뢰할 수 있으므로 개발자가 더 높은 추상화로 조합할 수 있다.</div>
+  <div><b>에이전트</b>지시를 처리하고 다음 단계를 스스로 고른다. 사람이 과정을 지켜볼 때는 잘 작동하지만, 루프마다 궤도를 벗어날 기회가 하나씩 더 생긴다.</div>
+  <div class="hi"><b>AI 기반 소프트웨어</b>코드가 결정적 작업을 처리하고 제어 흐름을 소유한다. 모델은 시스템이 프로그래밍 가능한 상식이 필요하거나 비정형 데이터를 해석해야 하는 곳에만 나타난다. 각 AI 과제는 원자적이고 제약되어 있다.</div>
+</div>
+
+<h3>System One을 조합 가능하게 만드는 것</h3>
+<table>
+  <tbody>
+    <tr><td><strong>구조화(Structured)</strong></td><td>System One은 구성상 타입 안전하다. 결정과 확률은 코드가 기대하는 소프트웨어 타입과 JSON 스키마를 따르므로, 생성된 산문에서 값을 복구할 필요가 없다.</td></tr>
+    <tr><td><strong>병렬(Parallel)</strong></td><td>질문은 독립적으로, 병렬로 평가된다. 한 프리미티브의 결과가 다른 프리미티브의 결과를 바꾸는 숨은 맥락이 되지 않는다.</td></tr>
+    <tr><td><strong>비교 가능(Comparable)</strong></td><td>출력은 정렬 가능하고, 똑똑한 <code>if</code>문·임계값·비교를 구동할 수 있다.</td></tr>
+    <tr><td><strong>빠름(Fast)</strong></td><td>대부분의 쿼리가 약 100 ms에 끝난다. 실시간 요청 경로와 사용자 인터페이스에 충분히 빠르다.</td></tr>
+    <tr><td><strong>캘리브레이션된 confidence</strong></td><td><a href="https://docs.typesafe.ai/introduction/machine-learning-primer">RLCD</a>는 과신으로 기우는 대신 캘리브레이션된 확률로 불확실성을 전달한다.</td></tr>
+    <tr><td><strong>자기 일관성(Self-consistent)</strong></td><td>반복 평가에서 안정적인 답을 돌려주도록 설계됐다.</td></tr>
+  </tbody>
+</table>
+<p>모든 출력이 제공된 옵션에 제약되므로, 모델은 스키마 밖의 값을 만들어내는 대신 그 옵션들에 대한 완전한 확률 분포를 돌려준다. TypeSafe의 목표는 100배 이상의 "지능 대 속도·비용" 비율이다. 그 아래 깔린 베팅은, 더 싼 지능이 훨씬 더 많은 수요를 만들 것이라는 것이다.</p>
+
+<h3>System One 워크플로 설계</h3>
+<p>분해는 왕복 횟수를 늘리지 않는다. 같은 state에 대한 질문들은 병렬로 실행된다.</p>
+
+<h3>모두 합치기</h3>
+<p>이 지원 티켓 워크플로는 결정적 작업을 코드에 두고, 관련 있는 구조화 맥락만 보내고, 원자적 질문 여러 개를 한 요청으로 평가하고, 답을 명시적 confidence 게이트로 조합한다. <span class="tag tag-indep">역주</span> 코드는 원문 그대로 둔다. 레슨 2의 시뮬레이터가 이것을 세 질문으로 줄인 버전이다. 읽을 때는 (1) state에 무엇을 넣고 뺐는지, (2) 각 질문의 <code>criteria</code>에 <code>what / not_for / examples</code>가 어떻게 들어 있는지, (3) 마지막 분기가 어느 필드를 읽는지 세 가지만 보라.</p>
+
+<pre><code>from typesafe_sdk import Choice, Noul, NoulCriteria, Score, TypeSafeClient
+
+def triage_ticket(ticket, customer):
+    # Handle deterministic states without calling a model.
+    if ticket["status"] == "closed":
+        return "no_action"
+
+    open_orders = [
+        order for order in customer["orders"] if order["status"] != "delivered"
+    ]
+
+    # Include only the structured context needed by the questions below.
+    state = {
+        "ticket": {
+            "message": ticket["message"],
+            "sender": ticket["sender"],
+            "links": ticket["links"],
+        },
+        "customer": {
+            "plan": customer["plan"],
+            "open_orders": open_orders,
+        },
+        "policy": {
+            "sensitive_credentials": ["password", "security code", "API key"],
+        },
+    }
+
+    # Ask structured, atomic questions together so they run in parallel.
+    questions = {
+        "topic": Choice(
+            instructions={
+                "question": "Which team should handle `ticket.message`?",
+                "focus": "Classify the customer's primary request.",
+            },
+            criteria={
+                "billing": {
+                    "what": "Charges, invoices, refunds, or subscriptions",
+                    "not_for": "Order tracking or account access",
+                    "examples": ["I was charged twice", "Where is my refund?"],
+                },
+                "orders": {
+                    "what": "Order status, delivery, cancellation, or returns",
+                    "not_for": "Charges or account access",
+                    "examples": ["Where is my order?", "Cancel my shipment"],
+                },
+                "account": {
+                    "what": "Login, profile, permissions, or security",
+                    "not_for": "Charges or order tracking",
+                    "examples": ["Reset my password", "I cannot sign in"],
+                },
+            },
+        ),
+        "requests_credentials": Noul(
+            instructions={
+                "question": "Does the message request a sensitive credential?",
+                "compare": ["`ticket.message`", "`policy.sensitive_credentials`"],
+                "focus": "Look for a request to disclose the credential itself.",
+            },
+            criteria=NoulCriteria(
+                true={"what": "Asks the recipient to disclose a listed credential",
+                      "examples": ["Reply with your password", "Send us your API key"]},
+                false={"what": "Does not ask the recipient to disclose a credential",
+                       "not_for": "A legitimate instruction to reset a credential",
+                       "examples": ["Use this link to reset your password"]},
+            ),
+        ),
+        "sender_identity_mismatch": Noul(
+            instructions={
+                "question": "Does the claimed sender identity conflict with its domain?",
+                "compare": ["`ticket.sender.display_name`", "`ticket.sender.email`"],
+                "focus": "Compare the named organization with the email domain.",
+            },
+            criteria=NoulCriteria(
+                true={"what": "Claims an organization unrelated to the email domain",
+                      "examples": ["Acme Payroll sent from claim-bonus.example"]},
+                false={"what": "The identity and domain agree or make no conflicting claim",
+                       "examples": ["Acme Payroll sent from acme.example"]},
+            ),
+        ),
+        "unexpected_reward": Noul(
+            instructions={
+                "question": "Does the message announce an unexpected reward?",
+                "inspect": "`ticket.message`",
+                "focus": "Look for an unsolicited prize, payment, or reward claim.",
+            },
+            criteria=NoulCriteria(
+                true={"what": "Announces an unrequested prize, payment, or reward",
+                      "examples": ["You were selected for a $1,000 bonus"]},
+                false={"what": "Contains no reward claim or discusses an expected payment",
+                       "not_for": "A customer asking about a known refund or payroll deposit",
+                       "examples": ["When will my approved refund arrive?"]},
+            ),
+        ),
+        "refund_requested": Noul(
+            instructions={
+                "question": "Does the customer explicitly request a refund or credit?",
+                "inspect": "`ticket.message`",
+                "focus": "Require a requested remedy, not a billing complaint alone.",
+            },
+            criteria=NoulCriteria(
+                true={"what": "Directly asks for money back or an account credit",
+                      "examples": ["Please refund the duplicate charge"]},
+                false={"what": "Does not ask for a refund or credit",
+                       "not_for": "A complaint or billing question without a requested remedy",
+                       "examples": ["Why was I charged twice?"]},
+            ),
+        ),
+        "mentions_open_order": Noul(
+            instructions={
+                "question": "Does the message refer to a supplied open order?",
+                "compare": ["`ticket.message`", "`customer.open_orders`"],
+                "focus": "Match an order id or other identifying details.",
+            },
+            criteria=NoulCriteria(
+                true={"what": "Refers to an open order by id or identifying details",
+                      "examples": ["Where is order A-104?"]},
+                false={"what": "Does not identify any supplied open order",
+                       "not_for": "A generic order question with no matching details",
+                       "examples": ["How long does shipping usually take?"]},
+            ),
+        ),
+        "frustration": Score(
+            instructions={
+                "question": "How frustrated does the customer appear?",
+                "inspect": "`ticket.message`",
+                "focus": "Judge expressed frustration, not issue severity.",
+            },
+            criteria=[
+                {"what": "Calm and matter-of-fact",
+                 "signals": ["Neutral wording", "No complaint about the experience"]},
+                {"what": "Frustrated but civil",
+                 "signals": ["Expresses annoyance", "Remains constructive"]},
+                {"what": "Very angry or threatening to leave",
+                 "signals": ["Hostile language", "Threatens cancellation or churn"]},
+            ],
+        ),
+    }
+
+    with TypeSafeClient() as client:
+        response = client.system_one(state=state, questions=questions)
+
+    # Compose independent spam signals with weights controlled by code.
+    answers = response.answers
+    spam_risk = (
+        0.45 * answers["requests_credentials"].noul
+        + 0.30 * answers["sender_identity_mismatch"].noul
+        + 0.25 * answers["unexpected_reward"].noul
+    )
+
+    # Escalate uncertain judgments instead of guessing.
+    spam_is_uncertain = 0.4 &lt; spam_risk &lt; 0.6
+    if spam_is_uncertain or answers["topic"].confidence &lt; 0.75:
+        return route_to_human_review(ticket)
+    if spam_risk &gt;= 0.6:
+        return quarantine_as_spam(ticket)
+
+    # Let code decide which speculative answers matter on this path.
+    if answers["topic"].choice == "billing":
+        return route_to_billing(ticket,
+            refund_requested=answers["refund_requested"].noul &gt;= 0.7)
+    if answers["topic"].choice == "orders":
+        return route_to_orders(ticket,
+            mentions_open_order=answers["mentions_open_order"].noul &gt;= 0.7)
+
+    priority = ("high"
+        if answers["frustration"].confidence &gt;= 0.7 and answers["frustration"].score &gt;= 1.5
+        else "normal")
+    return route_to_account_support(ticket, priority=priority)</code></pre>
+
+<hr class="doc" id="conf">
+<h2>3. Confidence</h2>
+<div class="src">원문: <a href="https://docs.typesafe.ai/confidence">docs.typesafe.ai/confidence</a> · 미러 <a href="https://github.com/thiagoadril/typesafe-docs/blob/main/docs/011-confidence-typesafe-ai.md">011-confidence</a></div>
+
+<p class="orig">How TypeSafe reports certainty, how it differs from probability, and how to use it to control system behavior.</p>
+<p><strong>TypeSafe가 확실성을 어떻게 보고하는지, 확률과 어떻게 다른지, 시스템 동작을 제어하는 데 어떻게 쓰는지.</strong></p>
+
+<p>TypeSafe의 모든 Score와 Choice 답에는 옵션(Choice) 또는 레벨(Score)에 걸친 확률 분포를 나타내는 <code>probabilities</code> 속성이 있다. 그 분포의 <em>모양</em>이 모델이 얼마나 확신하는지를 말해 준다. 한 결과에 몰려 있으면 확신하는 답, 퍼져 있으면 불확실한 답이다.</p>
+<p>답의 <code>confidence</code> 속성은 그 모양을 0~1 사이 숫자 하나로 접어, 직접 계산하지 않고도 임계값을 걸 수 있게 한다. (Noul 답에는 없다.)</p>
+
+<h3>confidence는 확률에서 파생된다</h3>
+<p><code>confidence</code>는 답이 이미 제공하는 확률 분포에서 계산된 통계다. TypeSafe가 계산해서 모든 Choice·Score 답에 돌려주므로, 일반적인 경우에는 추가 작업이 필요 없다.</p>
+<p><strong>견고한 기본값:</strong> 대부분의 유즈케이스에 맞는 편리한 척도로 <code>confidence</code>를 제공하지만, 우리 정의에 갇힐 필요는 없다. 평가 대상에 따라 다른 척도가 더 나을 수 있고, 바로 그래서 응답에 전체 <code>probabilities</code>를 준다.</p>
+<p>Choice에서는 분포가 옵션들에 걸친 <code>probabilities</code>다. Score에서는 레벨들에 걸친 분포다. 두 경우 모두 분포가 평평하면 confidence가 낮다. Choice에서 낮은 confidence는 흔히 어느 옵션도 뚜렷한 승자가 아니라는 뜻이고, Score에서 낮은 confidence는 레벨이 애매하거나 다차원적이거나 state에 판단할 근거가 부족하다는 뜻이다.</p>
+
+<h3>"모르겠다"는 유용한 신호다</h3>
+<p>사람이든 기계든, 지능 시스템이 정직한 불확실성을 표현할 수 없다면 그 시스템은 신뢰할 수 없다.</p>
+<p>confidence는 모델이 "이건 잘 모르겠다"고 말할 내장 장치를 준다. 이것으로 코드가 확실성 수준마다 다른 동작을 구현할 수 있고, 그것이 실제로 의존할 수 있는 시스템을 만드는 기초다.</p>
+
+<h3>코드에서 confidence를 쓰는 세 갈래</h3>
+<ul>
+  <li><strong>높은 confidence:</strong> 자동으로 행동한다. 모델이 분명하게 읽었으니 사람 개입 없이 진행할 수 있다.</li>
+  <li><strong>중간 confidence:</strong> 조심해서 진행한다. 합리적인 답은 있지만 확실하지는 않다. 맥락에 따라 사용자 확인, 검토 플래그, 추가 정보 수집 뒤에 행동한다.</li>
+  <li><strong>낮은 confidence:</strong> 행동하지 않는다. 사람에게 라우팅하거나, 명확화를 요청하거나, 다른 시스템으로 폴백한다. 모델이 정보가 부족하거나 질문이 잘 맞지 않는다고 말하는 것이다.</li>
+</ul>
+<p>경계를 어디에 그을지는 위험 부담(stakes)에 달렸다.</p>
+
+<h3>임계값은 리스크에 따라 달라진다</h3>
+<p>confidence 임계값은 숫자 하나가 아니다. 같은 시스템 안에서도 서로 다른 행동은, 틀렸을 때의 결과에 따라 다른 수준으로 게이트해야 한다.</p>
+<pre><code>action = response.answers["action"]
+confidence = action.confidence
+
+if confidence &lt; 0.5:
+    # Model is genuinely unsure. Don't guess.
+    route_to_human(user_message)
+elif action.choice == "check_balance":
+    # Low stakes. Showing the wrong screen is recoverable.
+    show_balance(account_id)
+elif action.choice == "approve_transfer":
+    if confidence &gt; 0.9:
+        # High stakes, high confidence. Proceed with confirmation.
+        confirm_then_execute(account_id)
+    else:
+        # High stakes, moderate confidence. Verify first.
+        ask_user_to_confirm(account_id)</code></pre>
+<p>0.5 confidence 바닥은 모델이 정말로 불확실하다고 보고하는 모든 것을 잡는다. 그 위에서는, 확인 없이 행동하는 임계값이 읽기 전용 작업보다 파괴적 작업에서 더 높다. <mark>코드가 리스크 허용도를 인코딩한다.</mark></p>
+<p>올바른 임계값은 도메인과 유즈케이스에서의 모델 성능에 달렸다. 보수적인 임계값으로 시작해서, 자기 데이터로 테스트하고, 결과를 관찰하며 조정하라.</p>
+
+</article>
+<footer class="lesson-foot">
+  <nav>
+    <a href="../lessons/0002-trace-one-state.html">레슨 0002로 돌아가기</a>
+    <a href="readings-ko-0001.html">레슨 0001 읽을 자료</a>
+    <a href="request-response-shape.html">치트시트</a>
+  </nav>
+  <div>번역 2026-09-22. 원문 저작권은 TypeSafe AI. 학습 목적의 비공식 번역.</div>
+</footer>
+</div>
+</body>
+</html>
