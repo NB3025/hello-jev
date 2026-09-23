@@ -14,4 +14,5 @@
 - 실습 형식 아이디어: 업무 시나리오를 주고 질문 세트+state+임계값을 표로 작성 → 커뮤니티 코드(kenhuangus, pi-jev)의 실제 설계와 비교해 즉시 피드백.
 - 2026-09-22: 레슨 0001(System One vs LLM, 요청/응답 해부) 작성. 자산: `assets/course.css`(공유 스타일), `assets/quiz.js`(선택형·빈칸형 퀴즈, 즉시 피드백, 진행 요약). 참조: `reference/request-response-shape.html`. 사용자가 레슨 6절 "말로 설명해 보기" 답을 보내면 피드백 후 첫 학습 기록(0001) 작성 예정. GLOSSARY는 사용자가 용어를 올바르게 쓴 증거가 생긴 뒤 시작.
 - 2026-09-22 (이어서): 레슨 1 뒤 사용자 질문 — "신경망 학습인가", "출력 토큰이 왜 싼가, Thinking 없나, 학습 데이터 대규모 필요하지 않나", "모델 세대처럼 좋아지나", "state가 주어지고 분류되는 흐름이 아직 안 잡힌다". 원리 궁금증이 강하고 정직한 한계 설명을 좋아함. → 레슨 순서 조정: 0002를 "state 하나 따라가기"(6칸 시뮬레이터, `assets/flow-sim.js`)로 바꿈. 원래의 "프리미티브 선택 규칙"은 0003 분해 레슨에 흡수하거나 0004로 밀기. 사용자가 아직 6절 "말로 설명" 답을 보내지 않아 학습 기록 없음.
+- 2026-09-23: 레슨 0003(질문 분해) 작성. 근거: typesafe-ai-firewall report.md 실측(단일 질문 hard-negative 39.2% 차단 vs 배터리 0%, 맥락 제거 시 탐지 61.6%)을 1차로 읽고 사용. 새 자산 `assets/decompose-sim.js`(단일 vs 배터리 비교, 가중치 슬라이더). 레슨 8절 과제: 리뷰 게시판 "게시해도 되는가" 분해 → 사용자 답 오면 공식 모더레이션 패턴과 비교 피드백. 첫 학습 기록(0001) 작성: 단일 통과 vs 자기회귀, 정확도 한계 스스로 도출.
 - 환경 제약: typesafe.ai, docs.typesafe.ai, langchain.com, vercel.com, cloudflare 문서 등 WebFetch 차단. GitHub raw/미러와 WebSearch 요약으로 대체. git clone은 가능.

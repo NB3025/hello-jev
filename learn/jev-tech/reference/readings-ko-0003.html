@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>읽을 자료(한글) · 레슨 0003 · Primitives · Fan-out · Composite scoring</title>
+<link rel="stylesheet" href="../assets/course.css">
+<style>
+  .src { font-family: var(--sans); font-size: .82rem; color: var(--muted); border: 1px solid var(--rule); border-radius: 6px; padding: .6rem .9rem; margin: 0 0 1.4rem; }
+  .src b { color: var(--fg); }
+  .orig { color: var(--muted); font-size: .85rem; font-style: italic; }
+  .toc { font-family: var(--sans); font-size: .9rem; }
+  .toc li { margin-bottom: .3rem; }
+  hr.doc { border: 0; border-top: 2px solid var(--rule); margin: 3.5rem 0 2.5rem; }
+</style>
+</head>
+<body>
+<div class="page">
+<article>
+<header class="lesson-head">
+  <div class="kicker">jev-tech · 읽을 자료 · 한글 번역</div>
+  <h1>레슨 0003의 1차 자료, 한글로</h1>
+  <p class="lede">공식 Primitives (Questions) 페이지 전체와, 패턴 두 개(Speculative fan-out, Composite scoring). 코드는 원문 그대로 두었다.</p>
+</header>
+
+<div class="src"><b>번역 원칙.</b> 원문 우선. 의역한 곳은 괄호에 원어. 역주는 <span class="tag tag-indep">역주</span>. 기준은 GitHub 미러 <a href="https://github.com/thiagoadril/typesafe-docs">thiagoadril/typesafe-docs</a>.</div>
+
+<ul class="toc">
+  <li><a href="#primitives">1. Primitives (Questions)</a> — 6분 · 레슨 3의 핵심</li>
+  <li><a href="#fanout">2. Patterns · Speculative fan-out</a> — 2분</li>
+  <li><a href="#composite">3. Patterns · Composite scoring</a> — 2분</li>
+</ul>
+
+<hr class="doc" id="primitives">
+<h2>1. Primitives (Questions)</h2>
+<div class="src">원문: <a href="https://docs.typesafe.ai/primitives">docs.typesafe.ai/primitives</a> · 미러 <a href="https://github.com/thiagoadril/typesafe-docs/blob/main/docs/005-primitives-questions-typesafe-ai.md">005-primitives</a></div>
+
+<p class="orig">The three TypeSafe question types (Choice, Score, Noul), the typed answers they return, how to choose between them, and how to ask several at once.</p>
+<p><strong>TypeSafe의 세 질문 유형(Choice, Score, Noul), 그것이 돌려주는 타입 답, 고르는 법, 여러 개를 한 번에 묻는 법.</strong></p>
+
+<p>TypeSafe의 프리미티브는 코드에서 조합하는 작고 타입 있는 구성 요소다. 짝으로 온다. 질문은 <a href="https://docs.typesafe.ai/concepts/system-one">System One 모델</a>이 <a href="https://docs.typesafe.ai/concepts/state">state</a>에 대해 내릴 판단 하나를 정의하고, 답은 돌아오는 타입 값이다. 답들을 코드에서 조합해 결정을 내린다. 질문 유형은 셋이고, 각각 다른 모양의 답을 돌려준다.</p>
+
+<table>
+  <thead><tr><th>유형</th><th>무엇에 답하나</th><th>반환</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Choice</strong></td><td>이 옵션들 중 어느 것?</td><td><code>choice</code>, <code>probabilities</code>, <code>confidence</code></td></tr>
+    <tr><td><strong>Score</strong></td><td>어느 레벨?</td><td><code>score</code>, <code>legend</code>, <code>probabilities</code>, <code>confidence</code></td></tr>
+    <tr><td><strong>Noul</strong></td><td>이것은 참인가?</td><td><code>noul</code> (0~1)</td></tr>
+  </tbody>
+</table>
+<p>질문을 하나만 묻거나 여러 개를 함께 보낼 수 있다. 요청의 모든 질문은 같은 state를 보고, 독립적으로 평가되며, 당신이 고른 ID 아래 타입 답을 돌려준다.</p>
+
+<h3 id="snap">질문 하나에 직감 판정(snap judgment) 하나</h3>
+<p>System One 모델은 빠르고 초점이 좁은 판단을 위해 만들어졌다. <mark>지식 있는 사람이 적절한 맥락이 주어지면 1초 안에 내리는 판단을 요청하라.</mark> "이 메시지는 긴급함을 전하는가?"는 좋은 질문이다. "이 메시지를 분석해서 최선의 대응을 결정하라"는 아니다. 그것은 느린 추론이 필요하고, 과제를 작은 질문들로 쪼개서 답을 코드에서 조합하라는 신호다.</p>
+<p>원하는 판단이 여러 독립 요인에 달려 있다면, 요인마다 따로 묻고 자신의 로직으로 답을 결합하라. "이 스타트업 피치를 평가하라" 대신 시장 크기, 기술적 실현 가능성, 차별화를 묻고, 상대적 중요도에 따라 코드에서 가중치를 매겨라. 우선순위가 바뀌면 프롬프트를 다시 쓰는 대신 가중치 값을 바꿔라.</p>
+
+<h3>질문 정의하기</h3>
+<p>모든 질문에는 ID, <code>type</code>, <code>instructions</code>가 있다. Choice와 Score 질문은 <code>criteria</code>도 받는다. Choice에서는 옵션을, Score에서는 레벨을 정의한다. Noul 질문은 예와 아니오가 무엇을 뜻하는지 선택적으로 명확히 하는 <code>criteria</code>를 받는다.</p>
+<ul>
+  <li><strong>ID.</strong> 당신이 고르는 키. 예: <code>refund_requested</code>. 응답에서 답을 식별한다.</li>
+  <li><strong><code>type</code>.</strong> <code>choice</code>, <code>score</code>, <code>noul</code> 중 하나.</li>
+  <li><strong><code>instructions</code>.</strong> state에 대해 묻는 질문. 평가 로직이 여기에 들어간다. 분명하고 구체적인 질문으로, 또는 모델이 판단할 진술로 써라.</li>
+  <li><strong><code>criteria</code>.</strong> 가능한 답. Choice는 옵션 맵, Score는 순서 있는 레벨 목록, Noul은 예·아니오에 대한 선택적 설명.</li>
+</ul>
+<pre><code>from typesafe_sdk import Noul
+questions = {
+    "refund_requested": Noul(
+        instructions="Does the customer request a refund?",
+    ),
+}</code></pre>
+<p><mark>질문 ID는 코드를 위한 것이다. 모델에 보내지지 않는다.</mark> ID가 자명해 보여도 <code>instructions</code>에 완전한 질문을 써라.</p>
+
+<h3 id="type">질문 유형 고르기</h3>
+<p>필요한 답의 모양에 맞는 유형을 골라라.</p>
+<ul>
+  <li><strong>Choice</strong>는 답이 순서 없는 알려진 옵션 집합 중 하나일 때 맞다. 티켓을 부서로 라우팅하기, 문서 유형 분류, 프로그래밍 언어 탐지. 옵션 전체 목록을 주고, 목록이 모든 입력을 덮지 못할 수 있으면 <code>other</code>나 <code>none of the above</code> 옵션을 더하라.</li>
+  <li><strong>Score</strong>는 답이 스펙트럼 위에 있고 그 스펙트럼의 각 지점이 무엇을 뜻하는지 묘사할 수 있을 때 맞다. 버그 심각도, 고객 불만, 숙련도. 레벨은 당신이 정의하고, 모델은 그 위의 위치를 돌려준다.</li>
+  <li><strong>Noul</strong>은 확률 자체가 유용한 신호인 깔끔한 예/아니오 질문에 맞다. 이 메시지는 버그를 보고하는가, 고객이 환불을 요청하는가, 이력서에 분산 시스템이 언급되는가.</li>
+</ul>
+<p>예/아니오 판단에는 Noul을, 스펙트럼 위의 위치를 재는 데는 Score를 써라. "이 지원자는 Python을 잘하는가?"에는 "잘한다"의 분명한 정의가 필요하다. <mark>Noul 값 0.5는 모델이 예와 아니오에 같은 확률을 준다는 뜻이다. 지원자의 실력이 중간이라는 뜻이 아니다.</mark> 정의가 불분명하면 그 확률은 해석하기 어렵다.</p>
+<p>숙련도를 재고 싶다면 경험 없음, 약간 익숙함, 매일 사용, 깊은 전문성 같은 정의된 레벨을 가진 Score를 써라. 예/아니오 결정이 필요하다면 "이력서에 지원자가 업무에서 Python을 사용했다고 적혀 있는가?"처럼 조건을 분명히 정의하라.</p>
+<p>두 유형이 모두 맞아 보이면, 코드가 답에 바로 행동할 수 있는 쪽을 택하라. <code>refund</code>, <code>rebook</code>, <code>information</code> 사이의 Choice는 코드 경로 세 개에 바로 대응한다. 고객 불만 Score는 임계값에 대응한다. Noul은 <code>if</code>에 대응한다.</p>
+
+<h3>무엇이 돌아오나</h3>
+<p>답도 프리미티브다. 각 질문 유형은 코드가 비교하고, 임계값을 걸고, 정렬하고, 다음 로직에 넘기거나, 후속 요청의 state에 넣을 수 있는 타입 값을 돌려준다.</p>
+<table>
+  <thead><tr><th>유형</th><th>답 필드</th><th>읽는 법</th></tr></thead>
+  <tbody>
+    <tr><td>Choice</td><td><code>choice</code>, <code>probabilities</code>, <code>confidence</code></td><td><code>choice</code>는 선택된 옵션. <code>probabilities</code>는 모든 옵션에 걸친 분포. <code>confidence</code>는 그 분포가 얼마나 뾰족한지 요약.</td></tr>
+    <tr><td>Score</td><td><code>score</code>, <code>legend</code>, <code>probabilities</code>, <code>confidence</code></td><td><code>score</code>는 레벨 위의 위치이며 두 레벨 사이일 수 있다. <code>legend</code>는 레벨을 번호로 다시 보여준다. <code>probabilities</code>는 레벨에 걸친 분포.</td></tr>
+    <tr><td>Noul</td><td><code>noul</code></td><td>답이 예일 확률. 1에 가까우면 강한 예, 0에 가까우면 강한 아니오, 0.5 근처는 불확실. 별도 <code>confidence</code>는 없다.</td></tr>
+  </tbody>
+</table>
+<p>이 답들을 조합 가능하게 만드는 두 속성:</p>
+<ul>
+  <li><strong>모든 답은 당신이 준 옵션에 제약된다.</strong> 모델은 당신의 옵션이나 레벨에 걸친 확률 분포를 돌려주며, 그 밖의 값은 절대 돌려주지 않는다.</li>
+  <li><strong>모든 답은 독립적이다.</strong> 한 질문의 답은 다른 질문의 숨은 맥락이 아니다. 질문을 더하거나 빼도 다른 질문의 결과가 바뀌지 않는다.</li>
+</ul>
+
+<h3>특정 필드 가리키기</h3>
+<p>평가 대상인 state는 흔히 대화·레코드·정책처럼 여러 부분을 가진 JSON 객체다. 질문이 그중 한 부분에 관한 것이라면, <code>instructions</code>에서 백틱을 포함한 점-인덱스 경로로 그 키를 지명하라. 그러면 모델이 state의 어느 부분을 판단할지 안다.</p>
+<pre><code>questions = {
+    "refund_requested": {
+        "type": "noul",
+        "instructions": "Does `ticket.messages[0].text` request a refund?",
+    },
+    "policy_supports_refund": {
+        "type": "noul",
+        "instructions": (
+            "Does `refund_policy` support the refund requested "
+            "in `ticket.messages[0].text`, given `order.charges`?"
+        ),
+    },
+}</code></pre>
+
+<h3>여러 질문을 함께 묻기</h3>
+<p>같은 state를 쓰는 모든 질문을 한 요청으로 보내라. 질문 유형은 자유롭게 섞을 수 있다. System One 모델은 요청의 모든 질문을 병렬로 평가한다. 질문을 더해도 응답 시간은 거의 바뀌지 않고, 추가 질문의 토큰 비용만 드는데 그것은 싸다. <mark>필요 없을지도 모르는 질문을 묻는 것은 거의 공짜다.</mark></p>
+<pre><code>from typesafe_sdk import Choice, Noul, Score, TypeSafeClient
+state = {
+    "ticket_message": "My flight was cancelled. Can I get a refund?",
+    "refund_policy": "Cancelled flights are eligible for a full refund.",
+}
+with TypeSafeClient() as client:
+    response = client.system_one(
+        state=state,
+        questions={
+            "refund_requested": Noul(
+                instructions="Does `ticket_message` request a refund?",
+            ),
+            "request_type": Choice(
+                instructions="What is the main request in `ticket_message`?",
+                criteria={
+                    "refund": "The customer wants money returned.",
+                    "rebooking": "The customer wants a replacement flight.",
+                    "information": "The customer is asking for information only.",
+                },
+            ),
+            "frustration": Score(
+                instructions="How frustrated does the customer appear in `ticket_message`?",
+                criteria=[
+                    "Calm and neutral.",
+                    "Concerned but civil.",
+                    "Very angry or using strong language.",
+                ],
+            ),
+        },
+    )</code></pre>
+
+<h3>추측성 질문(speculative questions) 묻기</h3>
+<p>코드가 필요할 수도 있는 모든 질문을, 일부 입력에서만 의미 있는 것까지 포함해 묻고, 어떤 답을 쓸지는 코드가 정하게 하라. 티켓이 버그 보고가 아니면 심각도 답은 무시하라. 이것을 <a href="#fanout">Speculative fan-out</a> 패턴이라 부른다. <a href="https://docs.typesafe.ai/cookbooks/parallel_questions">Parallel questions 쿡북</a>은 질문 13개를 한 호출에 묶으면 13번 따로 부르는 것보다 11.5배 싸고 9.6배 빠르며, 답은 바뀌지 않음을 보여준다.</p>
+<p>한 요청의 질문 개수는 요청의 토큰 예산으로만 제한되며, state와 질문이 그 예산을 나눠 쓴다. 예산은 약 32,000 토큰, 영어 텍스트로 약 15만 자다.</p>
+<p>코딩 에이전트는 사람보다 "호출 하나에 질문 하나" 습관에 더 잘 빠진다. <a href="https://docs.typesafe.ai/agent-skill#installation">TypeSafe 에이전트 스킬</a>은 에이전트에게 호출마다 많은 질문을, 일부 입력에서만 의미 있는 것까지 넣으라고 알려준다.</p>
+
+<h3>복잡한 판단을 여러 질문으로 쪼개기</h3>
+<p>여러 가지에 의존하는 판단은 그 가지마다 질문 하나씩으로 쪼개는 것이 가장 좋다. 답은 코드에서 결합하되, 각각에 상대적 중요도의 가중치를 줘라. <mark>가중치는 당신 것이다.</mark> 결합한 결과가 팀이 내릴 결정과 맞지 않으면 코드에서 바꾸고 다시 돌려라. 질문은 한 요청 안에서 병렬로 돌기 때문에 질문을 더해도 응답 시간은 거의 바뀌지 않는다. 쪼개는 비용은 추가 질문 토큰 몇 개다.</p>
+<p>예를 들어 티켓 우선순위를 Score 질문 세 개로 만들 수 있다: 버그가 얼마나 심각한가, 고객이 얼마나 불만인가, 보고서가 엔지니어에게 얼마나 작업 거리를 주는가. 이 기법을 <a href="#composite">Composite scoring</a> 패턴이라 부른다.</p>
+
+<h3 id="depends">한 질문이 다른 질문에 의존할 때</h3>
+<p>같은 요청의 질문들은 독립적이다. 한 답이 다른 질문의 맥락이 되지 않는다. 나중 판단이 앞선 답에 의존한다면, 코드에서 두 번째 요청을 하라. <mark>의존이 진짜인 것은 첫 답을 얻기 전까지 코드가 두 번째 요청을 만들 수 없을 때뿐이다.</mark> state를 위해 데이터를 더 가져와야 하거나, state를 무엇으로 구성할지 정해야 하거나, 다음 질문의 옵션을 골라야 하는 경우다. 그 외에는 질문들을 함께 묻고 답을 코드에서 결합하라.</p>
+<p>두 번 요청은 규칙이 아니라 예외다. 두 번째 요청의 질문을 원래 state에 대해 물을 수 있었다면, 첫 요청에 넣고 필요 없는 것은 코드가 무시하게 하라. 진짜 이유로 두 번째 요청을 하는 쿡북 세 개: <a href="https://docs.typesafe.ai/cookbooks/skill_suggestion">Skill suggestion</a>은 182개 스킬을 한 요청에서 순위 매긴 뒤, 상위 3개의 전문을 가져와 그 더 나은 증거로 다시 판단한다. <a href="https://docs.typesafe.ai/cookbooks/autoformat">Structure recovery</a>는 각 줄바꿈이 문장을 갈랐는지 묻고, 그 답으로 줄을 블록으로 합친 뒤 블록을 분류한다(블록은 첫 요청이 답하기 전엔 존재하지 않았다). <a href="https://docs.typesafe.ai/cookbooks/hierarchical_classification">Hierarchical classification</a>은 각 Choice 답으로 다음 요청이 어떤 옵션을 제시할지 정한다.</p>
+
+<hr class="doc" id="fanout">
+<h2>2. Patterns · Speculative fan-out</h2>
+<div class="src">원문: <a href="https://docs.typesafe.ai/patterns/fan-out">docs.typesafe.ai/patterns/fan-out</a> · 미러 <a href="https://github.com/thiagoadril/typesafe-docs/blob/main/docs/015-speculative-fan-out-typesafe-ai.md">015-fan-out</a></div>
+
+<p class="orig">Send many questions in a single call, including speculative ones, and let your code decide what's relevant.</p>
+<p><strong>추측성 질문을 포함해 많은 질문을 한 호출에 보내고, 무엇이 관련 있는지는 코드가 정하게 하라.</strong></p>
+<p>TypeSafe는 한 API 호출에 많은 질문을 보낼 수 있으므로, 시스템에 필요한 모든 질문을 한 요청에 넣고 무엇이 관련 있는지는 사후에 코드로 정하기를 권한다. 모든 질문이 병렬로 평가되므로 질문을 더해도 보통 응답 지연이 늘지 않는다.</p>
+<h3>예: 지원 티켓 트리아지</h3>
+<p>지원 티켓을 분류하는 시스템을 만든다고 하자. 티켓을 카테고리로 분류해야 하고, 버그 보고라면 버그 심각도도 정해야 한다. 카테고리를 먼저 묻고 후속 호출로 심각도를 묻는 대신, 둘을 동시에 물을 수 있다. 티켓이 버그 보고가 아니면 심각도 결과를 그냥 무시하면 된다.</p>
+<pre><code>{
+  "category": {"type": "choice", "instructions": "Determine the broad category of this support ticket",
+    "criteria": {"bug_report": "The user is reporting something that is broken or producing errors",
+                 "billing": "Charges, invoices, refunds, subscriptions",
+                 "feature_request": "The user is requesting new functionality",
+                 "account": "Login, permissions, profile, security"}},
+  "bug_severity": {"type": "score", "instructions": "How severe is the reported issue",
+    "criteria": ["Cosmetic; no impact to functionality",
+                 "Broken or degraded feature; workaround exists",
+                 "Blocking issue; no workaround exists"]},
+  "has_reproducible_steps": {"type": "noul", "instructions": "The user describes specific steps to reproduce the issue"},
+  "refund_requested": {"type": "noul", "instructions": "The user is explicitly asking for a refund or credit"},
+  "frustration": {"type": "score", "instructions": "How frustrated the user appears",
+    "criteria": ["Calm, matter-of-fact", "Frustrated but civil", "Very angry"]}
+}</code></pre>
+<p><strong>추측성 질문:</strong> <code>bug_severity</code>와 <code>has_reproducible_steps</code>는 티켓이 버그 보고일 때만 의미가 있다. <code>refund_requested</code>는 billing일 때만 의미가 있다. 추가 질문에 속도 비용이 없으므로 전부 미리 넣는다. 기능 요청으로 판명되면 버그 심각도 결과는 무관해지고, 그러면 코드 경로가 그냥 무시한다.</p>
+<pre><code>category = response.answers["category"]
+bug_severity = response.answers["bug_severity"]
+bug_repro = response.answers["has_reproducible_steps"]
+refund = response.answers["refund_requested"]
+frustration = response.answers["frustration"]
+if category.choice == "bug_report":
+    if bug_severity.score &gt; 1.5 and bug_repro.noul &gt; 0.6:
+        escalate_to_engineering(ticket_id, severity="high")
+    else:
+        add_to_bug_backlog(ticket_id)
+elif category.choice == "billing":
+    if refund.noul &gt; 0.7:
+        route_to_billing_with_flag(ticket_id, refund_likely=True)
+    else:
+        route_to_billing(ticket_id)
+elif category.choice == "feature_request":
+    log_feature_request(ticket_id)
+# Frustration is useful regardless of category
+if frustration.score &gt; 1.5:
+    flag_for_priority_response(ticket_id)</code></pre>
+<p>전체 결정 트리에 필요한 모든 것이 한 번의 호출에서 나온다. 추측성 질문은 무관할 때 무시되고, 관련 있을 때는 왕복 한 번을 아낀다.</p>
+
+<hr class="doc" id="composite">
+<h2>3. Patterns · Composite scoring</h2>
+<div class="src">원문: <a href="https://docs.typesafe.ai/patterns/composite-scoring">docs.typesafe.ai/patterns/composite-scoring</a> · 미러 <a href="https://github.com/thiagoadril/typesafe-docs/blob/main/docs/017-composite-scoring-typesafe-ai.md">017-composite</a></div>
+
+<p class="orig">Break a complex judgment into atomic scores, combine with weights you control in code.</p>
+<p><strong>복잡한 판단을 원자적 점수들로 쪼개고, 코드에서 통제하는 가중치로 결합하라.</strong></p>
+<p>여러 기준으로 동시에 항목들의 순위를 매기고 싶을 때가 많다. 복합 점수는 이것을 생각하는 쉬운 방법이다. 판단을 독립 차원들로 쪼개고, 각각을 따로 점수 매기고, 코드에서 통제하는 가중치로 결합한다.</p>
+<h3>예: 이력서 선별</h3>
+<p>엔지니어링 직무 이력서를 처리한다고 하자. 여러 기준으로 후보의 순위를 매기고, 최종적으로 상위 X명을 추가 검토 대상으로 고르고 싶다.</p>
+<p><strong>1단계: 각 차원을 독립적으로 점수 매기기.</strong> <code>python_depth</code>, <code>team_leadership</code>, <code>system_design</code>, <code>generalist</code> 네 개의 5단계 Score. <span class="tag tag-indep">역주</span> 레벨 문구 예: python_depth = "No Python experience mentioned" / "Mentioned but no detail" / "Used in projects, some specifics" / "Primary language, multiple projects" / "Deep expertise: architecture, performance, libraries". 각 레벨이 "정도"가 아니라 <em>관찰 가능한 상황</em>을 묘사한다는 점에 주목.</p>
+<p><strong>2단계: 가중치로 결합.</strong> 각 차원을 0~1로 정규화하고 가중한다. 가중치로 각 차원의 상대적 중요도를 쉽게 조정할 수 있고, 개별 점수의 뉘앙스는 잃지 않는다.</p>
+<pre><code>py      = response.answers["python_depth"].score / 4
+lead    = response.answers["team_leadership"].score / 4
+arch    = response.answers["system_design"].score / 4
+general = response.answers["generalist"].score / 4
+# Senior IC
+ic_score = (0.40 * py) + (0.10 * lead) + (0.40 * arch) + (0.10 * general)
+# Engineering Manager
+em_score = (0.15 * py) + (0.40 * lead) + (0.20 * arch) + (0.25 * general)</code></pre>
+<p>이것으로 복합 점수에 따라 후보의 순위를 매길 수 있다. 하지만 더 중요한 것은, 최종 점수가 정확히 어떻게 계산되는지 들여다볼 수 있다는 점이다. 상위 후보가 기대와 맞지 않으면 가중치를 조정해 적절한 균형을 찾을 수 있다. <span class="tag tag-indep">역주</span> 같은 네 개의 답으로 IC용과 EM용 두 순위를 동시에 만든다. 모델을 한 번 부르고, 코드에서 두 가지 관점을 적용한 것이다.</p>
+
+</article>
+<footer class="lesson-foot">
+  <nav>
+    <a href="../lessons/0003-decompose-questions.html">레슨 0003으로 돌아가기</a>
+    <a href="readings-ko-0002.html">레슨 0002 읽을 자료</a>
+    <a href="request-response-shape.html">치트시트</a>
+  </nav>
+  <div>번역 2026-09-23. 원문 저작권은 TypeSafe AI. 학습 목적의 비공식 번역.</div>
+</footer>
+</div>
+</body>
+</html>

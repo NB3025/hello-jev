@@ -39,7 +39,7 @@
     --llm: #d1bb6d;
     --llm-soft: #2c2716;
     --ok: #7fcf9f;
-    --ok-soft: #17302200;
+    --ok-soft: #173022;
     --bad: #f08a83;
     --bad-soft: #3a1c1a;
     --code-bg: #1f1e1b;
@@ -362,3 +362,51 @@ footer.lesson-foot nav { display: flex; flex-wrap: wrap; gap: 1.2rem; margin-bot
 .flow-sim .sim-nav button[disabled] { opacity: .35; cursor: default; }
 .flow-sim .sim-nav .pos { color: var(--muted); font-size: .82rem; font-variant-numeric: tabular-nums; }
 @media (max-width: 40rem) { .flow-sim .two { grid-template-columns: 1fr; } .flow-sim .bar-row { grid-template-columns: minmax(5rem, 45%) 1fr 2.6rem; } }
+
+/* ── 질문 분해 시뮬레이터 (decompose-sim.js) ── */
+.decomp { font-family: var(--sans); font-size: .9rem; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; margin: 1.4rem 0 2rem; background: var(--bg); }
+.decomp .dtop { padding: .8rem .9rem .6rem; border-bottom: 1px solid var(--rule); background: var(--code-bg); display: flex; flex-direction: column; gap: .6rem; }
+.decomp .dtabs, .decomp .dmodes { display: flex; gap: .4rem; flex-wrap: wrap; }
+.decomp .dtab { font: inherit; font-size: .8rem; padding: .3rem .65rem; border: 1px solid var(--rule); border-radius: 999px; background: var(--bg); color: var(--fg); cursor: pointer; }
+.decomp .dtab.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.decomp .dmode { font: inherit; font-size: .84rem; padding: .4rem .8rem; border: 1px solid var(--rule); border-radius: 6px; background: var(--bg); color: var(--fg); cursor: pointer; flex: 1; }
+.decomp .dmode.on { border-color: var(--jev); background: var(--jev-soft); color: var(--jev); font-weight: 700; }
+.decomp .dbody { padding: 1rem .9rem .6rem; display: grid; gap: .9rem; }
+.decomp .dmini { font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: .2rem; }
+.decomp .dcase { border: 1px solid var(--rule); border-radius: 6px; padding: .7rem .8rem; }
+.decomp .dcall { display: block; margin-top: .2rem; white-space: pre-wrap; word-break: break-all; font-size: .8rem; }
+.decomp .dnote { font-size: .8rem; color: var(--muted); margin-top: .4rem; }
+.decomp .dgrid { display: grid; gap: .5rem; }
+.decomp .dq { border: 1px solid var(--rule); border-radius: 6px; padding: .55rem .7rem; background: var(--bg); }
+.decomp .dqt { color: var(--muted); font-size: .82rem; }
+.decomp .drow { display: grid; grid-template-columns: 3rem 1fr 3.4rem; gap: .5rem; align-items: center; margin-top: .35rem; font-size: .82rem; }
+.decomp .dbar { display: block; height: 10px; background: var(--code-bg); border-radius: 5px; overflow: hidden; }
+.decomp .dfill { display: block; height: 100%; background: var(--jev); border-radius: 5px; transition: width .4s; }
+.decomp .dfill.hot { background: var(--bad); }
+.decomp .dval { font-family: var(--mono); font-size: .78rem; text-align: right; font-variant-numeric: tabular-nums; }
+.decomp .dcode { font-family: var(--mono); font-size: .8rem; background: var(--code-bg); border-radius: 6px; padding: .7rem .8rem; line-height: 1.6; }
+.decomp .dcode b { font-family: var(--sans); font-size: .78rem; display: block; margin-bottom: .3rem; color: var(--muted); }
+.decomp .dcode .c { color: var(--muted); font-style: italic; font-family: var(--sans); font-size: .78rem; }
+.decomp .drule { padding: .2rem .4rem; border-radius: 4px; opacity: .6; }
+.decomp .drule.hit { opacity: 1; background: var(--ok-soft); }
+.decomp .dfire { color: var(--ok); font-family: var(--sans); font-weight: 700; font-size: .78rem; }
+.decomp .dresult { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; border-radius: 6px; padding: .8rem .9rem; border-left: 4px solid; }
+.decomp .dresult.ok { background: var(--ok-soft); border-color: var(--ok); }
+.decomp .dresult.bad { background: var(--bad-soft); border-color: var(--bad); }
+.decomp .dresult b { font-size: 1rem; }
+.decomp .dverdict { grid-column: 1 / -1; font-size: .84rem; font-weight: 600; }
+.decomp .dresult.ok .dverdict { color: var(--ok); }
+.decomp .dresult.bad .dverdict { color: var(--bad); }
+.decomp .dfoot { padding: .7rem .9rem; border-top: 1px solid var(--rule); background: var(--code-bg); font-size: .84rem; color: var(--muted); }
+.decomp .dsliders { display: grid; gap: .5rem; }
+.decomp .dsl { display: grid; grid-template-columns: 1fr 8rem 2.6rem; gap: .6rem; align-items: center; font-size: .84rem; }
+.decomp .dsl input { width: 100%; accent-color: var(--accent); }
+.decomp .dtablewrap { overflow-x: auto; }
+.decomp .dtable { margin: 0; font-size: .84rem; }
+.decomp .dtable th { text-transform: none; letter-spacing: 0; white-space: nowrap; }
+.decomp .dtable td.dnum { font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
+.decomp .dband { display: inline-block; padding: .1em .55em; border-radius: 999px; font-size: .78rem; font-weight: 600; }
+.decomp .dband.pass { background: var(--ok-soft); color: var(--ok); }
+.decomp .dband.human { background: var(--accent-soft); color: var(--accent); }
+.decomp .dband.block { background: var(--bad-soft); color: var(--bad); }
+@media (max-width: 40rem) { .decomp .dresult { grid-template-columns: 1fr; } .decomp .dsl { grid-template-columns: 1fr; } }
