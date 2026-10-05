@@ -410,3 +410,39 @@ footer.lesson-foot nav { display: flex; flex-wrap: wrap; gap: 1.2rem; margin-bot
 .decomp .dband.human { background: var(--accent-soft); color: var(--accent); }
 .decomp .dband.block { background: var(--bad-soft); color: var(--bad); }
 @media (max-width: 40rem) { .decomp .dresult { grid-template-columns: 1fr; } .decomp .dsl { grid-template-columns: 1fr; } }
+
+/* ── 파인만 연습지 (feynman.js) ── */
+.fy-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem; font-family: var(--sans); font-size: .84rem; margin: 1.2rem 0 2rem; }
+.fy-steps div { border: 1px solid var(--rule); border-radius: 6px; padding: .6rem .7rem; background: var(--code-bg); }
+.fy-steps b { display: block; color: var(--jev); font-size: .78rem; letter-spacing: .06em; margin-bottom: .2rem; }
+.fy-q { font-family: var(--sans); font-size: 1rem; font-weight: 700; margin: 0 0 .3rem; }
+.fy-q::before { content: "친구: "; color: var(--accent); }
+.fy-label { font-family: var(--sans); font-size: .74rem; font-weight: 700; letter-spacing: .08em; color: var(--muted); margin: 1.1rem 0 .35rem; }
+.fy-input { width: 100%; min-height: 8rem; font: inherit; font-size: .95rem; line-height: 1.65; padding: .7rem .8rem; border: 1px solid var(--rule); border-radius: 6px; background: var(--bg); color: var(--fg); resize: vertical; }
+.fy-input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.fy-row { display: flex; justify-content: space-between; align-items: center; gap: .6rem; margin-top: .4rem; font-family: var(--sans); }
+.fy-count { font-size: .8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.fy-count.over { color: var(--bad); }
+.fy-check { font: inherit; font-family: var(--sans); font-size: .86rem; font-weight: 600; padding: .4rem .9rem; border-radius: 6px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; }
+.fy-result { font-family: var(--sans); font-size: .88rem; border: 1px solid var(--rule); border-radius: 6px; padding: .7rem .8rem; margin-top: .6rem; display: grid; gap: .6rem; }
+.fy-h { font-weight: 700; font-size: .82rem; display: flex; justify-content: space-between; }
+.fy-h span { color: var(--muted); font-weight: 500; font-variant-numeric: tabular-nums; }
+.fy-list { list-style: none; padding: 0; margin: .3rem 0 0; display: grid; gap: .25rem; }
+.fy-list li { padding: .25rem .5rem; border-radius: 4px; }
+.fy-list li.ok { background: var(--ok-soft); }
+.fy-list li.miss { background: var(--bad-soft); }
+.fy-list li.warn { background: var(--accent-soft); }
+.fy-ok { color: var(--ok); margin: .3rem 0 0; }
+.fy-note, .fy-empty { color: var(--muted); font-size: .8rem; margin: 0; }
+.fy-gaps { font-family: var(--sans); font-size: .9rem; margin: 0; padding-left: 1.2rem; }
+.fy-gaps li { margin-bottom: .5rem; }
+.fy-gaps details summary { cursor: pointer; }
+.fy-gaps details p { margin: .35rem 0 0; color: var(--muted); }
+.fy-src { font-family: var(--sans); font-size: .86rem; background: var(--jev-soft); border-radius: 6px; padding: .6rem .8rem; }
+.fy-model { border: 1px solid var(--rule); border-radius: 6px; margin-top: .8rem; }
+.fy-model > summary { font-family: var(--sans); font-weight: 700; font-size: .9rem; padding: .6rem .8rem; cursor: pointer; background: var(--code-bg); border-radius: 6px; }
+.fy-model[open] > summary { border-bottom: 1px solid var(--rule); border-radius: 6px 6px 0 0; }
+.fy-model .say { padding: .8rem .9rem .2rem; }
+.fy-breaks { font-family: var(--sans); font-size: .82rem; color: var(--muted); padding: 0 .9rem .8rem; }
+.fy-breaks b { color: var(--fg); }
+@media (max-width: 40rem) { .fy-steps { grid-template-columns: 1fr 1fr; } }

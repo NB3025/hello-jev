@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jev 파인만 대본</title>
+<link rel="stylesheet" href="../assets/course.css">
+<style>
+  body { padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px)); }
+  .seg { border: 1px solid var(--rule); border-radius: 8px; margin: 1.6rem 0; background: var(--bg); scroll-margin-top: 1rem; transition: border-color .2s, box-shadow .2s; }
+  .seg.now { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .seg-head { display: flex; gap: .7rem; align-items: baseline; flex-wrap: wrap; padding: .8rem 1rem .6rem; border-bottom: 1px solid var(--rule); font-family: var(--sans); cursor: pointer; }
+  .seg-head:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+  .seg-time { font-family: var(--mono); font-size: .8rem; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .seg-title { font-weight: 700; font-size: 1.02rem; }
+  .seg-body { padding: .9rem 1rem 1rem; }
+  .say p { margin: 0 0 .8rem; }
+  .swap td:first-child { white-space: nowrap; font-weight: 600; }
+  .talk-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--bg); border-top: 1px solid var(--rule); padding: .55rem 16px calc(.55rem + env(safe-area-inset-bottom, 0px)); font-family: var(--sans); box-shadow: 0 -4px 14px rgba(0,0,0,.06); }
+  .tb-row { display: flex; align-items: center; gap: .6rem; max-width: 52rem; margin: 0 auto; }
+  .tb-btn { font: inherit; font-size: .86rem; font-weight: 600; padding: .45rem .9rem; border-radius: 6px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; min-width: 4.8rem; }
+  .tb-btn.ghost { background: transparent; color: var(--accent); min-width: 0; }
+  .tb-time { font-family: var(--mono); font-size: .86rem; font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
+  .tb-time b { color: var(--fg); }
+  .tb-seg { flex: 1; min-width: 0; font-size: .8rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tb-seg span:first-child { color: var(--fg); font-weight: 600; }
+  .tb-track { position: relative; height: 4px; background: var(--code-bg); border-radius: 2px; max-width: 52rem; margin: .45rem auto 0; overflow: hidden; }
+  .tb-fill { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--accent); }
+  .tb-track i { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--bg); }
+  @media (max-width: 40rem) { .tb-seg span:last-child { display: none; } }
+  @media print { .talk-bar { display: none; } body { padding-bottom: 0; } .fy-input { min-height: 6rem; } }
+</style>
+</head>
+<body>
+<div class="page">
+<article>
+
+<header class="lesson-head">
+  <div class="kicker">jev-tech · 발표 대본 · 파인만 학습법 · 10분</div>
+  <h1>IT를 모르는 친구에게<br>Jev를 10분 동안 설명하기</h1>
+  <p class="lede">파인만 학습법은 "남에게 쉬운 말로 설명할 수 없으면, 아직 모르는 것"이라는 생각에서 출발한다. 이 페이지는 모범 대본을 읽기 전에 먼저 당신이 설명해 보고, 막히는 곳을 찾고, 자료로 메우게 만든다.</p>
+</header>
+
+<h2>이 페이지를 쓰는 순서</h2>
+<div class="fy-steps wide">
+  <div><b>1 · 써 보기</b>친구의 질문에 모범 대본을 열지 말고, 친구에게 말하듯 쓴다.</div>
+  <div><b>2 · 빈틈 찾기</b>"점검"을 누르고, 친구의 꼬리 질문에 답할 수 있는지 본다.</div>
+  <div><b>3 · 자료로 메우기</b>막힌 곳은 링크된 레슨으로 돌아가 읽고 다시 쓴다.</div>
+  <div><b>4 · 비교하고 줄이기</b>모범 대본을 열어 비교하고, 더 짧고 쉬운 말로 고친다.</div>
+</div>
+<p>다섯 칸을 모두 쓰고 나면, 아래 타이머를 켜고 <strong>자기가 쓴 글</strong>로 소리 내어 10분을 말해 본다. 쓴 글은 이 기기의 브라우저에만 저장된다.</p>
+
+<div class="callout mission">
+  <h4>정한 것</h4>
+  청중은 <strong>IT를 모르는 친구</strong>, ChatGPT는 써 본 정도. 전체를 꿰는 비유는 <strong>서술형 시험 vs 객관식 시험</strong>: ChatGPT는 답안을 한 글자씩 써 내려가는 학생이고, Jev는 우리가 낸 보기 중 하나에 동그라미를 치고 "몇 % 확신"을 적는 학생이다.
+</div>
+
+<h2>단어 바꾸기 표</h2>
+<p>친구 앞에서는 왼쪽 말을 쓰지 않는다. "점검" 버튼이 왼쪽 단어를 찾아 준다.</p>
+<table class="swap">
+  <thead><tr><th>전문 용어</th><th>친구에게는</th></tr></thead>
+  <tbody>
+    <tr><td>state</td><td>시험지에 붙은 지문, 판단 재료</td></tr>
+    <tr><td>Choice / Score / Noul</td><td>객관식 / 1~5점 척도 / O·X 문제</td></tr>
+    <tr><td>confidence, 확률</td><td>확신도, "몇 % 자신 있다"</td></tr>
+    <tr><td>토큰, 자기회귀</td><td>글자 조각, 한 조각씩 이어 쓰기</td></tr>
+    <tr><td>캘리브레이션</td><td>"80%라고 한 것들을 모아 보면 실제로 80% 맞는다"</td></tr>
+    <tr><td>임계값</td><td>합격선</td></tr>
+    <tr><td>에이전트, 툴 호출</td><td>AI 비서, AI 비서가 실행하려는 작업</td></tr>
+    <tr><td>환각</td><td>그럴듯한 거짓말을 지어내는 것</td></tr>
+  </tbody>
+</table>
+
+<!-- ───────────── 칸 1 ───────────── -->
+<section class="seg" data-start="0" data-end="90" data-label="1 · Jev가 뭐야?">
+  <div class="seg-head"><span class="seg-time">0:00–1:30</span><span class="seg-title">1 · Jev가 뭐야?</span></div>
+  <div class="seg-body">
+    <p class="fy-q">"Jev? 그것도 ChatGPT 같은 거야?"</p>
+
+    <div class="fy-label">1단계 · 직접 써 보기</div>
+    <textarea class="fy-input" id="fy-1" data-target-sec="90" aria-label="칸 1 내 설명" placeholder="친구에게 말하듯 써 보세요. 서술형 시험과 객관식 시험을 떠올리면 시작하기 쉽습니다."></textarea>
+    <div class="fy-row"><span class="fy-count" id="fy-1-count"></span><button type="button" class="fy-check" data-for="fy-1">점검</button></div>
+    <div class="fy-result" id="fy-1-result" hidden></div>
+
+    <div class="fy-label">2단계 · 친구의 꼬리 질문 (답해 보고 열기)</div>
+    <ol class="fy-gaps">
+      <li><details><summary>"확신 80%는 누가 정해?"</summary><p>Jev가 스스로 매긴다. 그렇게 훈련됐다. "80%라고 한 것들을 모아 보면 실제로 80%쯤 맞도록". 한 문제가 맞는다는 보장은 아니다.</p></details></li>
+      <li><details><summary>"객관식만 돼? O·X는?"</summary><p>세 종류가 된다. 보기 중 하나 고르기, 1~5점 같은 척도, O·X. 한 시험지에 섞어 낼 수도 있다.</p></details></li>
+      <li><details><summary>"ChatGPT한테 고르라고 해도 고르잖아?"</summary><p>고르긴 한다. 하지만 서술형 학생에게 객관식을 시키는 셈이라 느리고, 가끔 보기에 없는 말을 쓴다. 그 차이가 칸 2와 3이다.</p></details></li>
+    </ol>
+
+    <div class="fy-label">3단계 · 막혔다면 여기로</div>
+    <div class="fy-src">레슨 <a href="../lessons/0001-system-one-vs-llm.html">0001</a> 1~2절(두 가지 계약, 세 가지 프리미티브). <a href="readings-ko-0001.html">공식 Introduction 한글 번역</a>.</div>
+
+    <details class="fy-model">
+      <summary>4단계 · 모범 대본 열기 (먼저 써 본 뒤에)</summary>
+      <div class="say">
+        <p>시험 두 종류를 떠올려 봐. 서술형이랑 객관식. ChatGPT는 서술형 시험 보는 학생이야. 문제를 읽고 답안을 처음부터 끝까지 글로 써 내려가. 그래서 뭐든 쓸 수 있지만, 쓰는 데 시간이 걸려.</p>
+        <p>Jev는 객관식 시험 보는 학생이야. 문제랑 보기를 받으면 하나에 동그라미를 쳐. 그리고 옆에 "이거 80% 확신해"라고 적어 줘. 글은 한 줄도 안 써.</p>
+        <p>중요한 건, 보기는 우리가 만들어서 준다는 거야. 고객 문의가 하나 들어왔다고 해 봐. "결제팀, 기술팀, 영업팀 중 어디로 보낼까?" 하고 보기 셋을 주면, Jev가 "결제팀, 84%"라고 돌려줘. 프로그램은 그 답을 보고 바로 결제팀으로 넘기면 돼.</p>
+        <p>문제 종류는 세 가지야. 고르기, 점수 매기기, O·X. 예를 들어 같은 문의에 "이거 급한 요청이야?" 하고 O·X로 물으면 "맞다, 99%". "얼마나 화났어? 침착, 불만, 매우 화남 중에" 하면 "불만 정도". 시험지 한 장에 세 문제를 같이 내면 답 세 개가 같이 와.</p>
+        <p>만든 곳은 TypeSafe라는 회사고, ChatGPT를 만드는 데 참여했던 연구자가 차렸어. 지난달에 처음 공개됐어.</p>
+      </div>
+      <div class="fy-breaks"><b>비유가 깨지는 곳.</b> 사람 학생은 문제를 하나씩 풀지만, Jev는 시험지에 문제 열 개를 같이 내면 열 개를 동시에 푼다. 그리고 여기서 "시험 출제자"는 선생님이 아니라 Jev를 쓰는 우리다.</div>
+    </details>
+  </div>
+</section>
+
+<!-- ───────────── 칸 2 ───────────── -->
+<section class="seg" data-start="90" data-end="210" data-label="2 · 왜 빨라?">
+  <div class="seg-head"><span class="seg-time">1:30–3:30</span><span class="seg-title">2 · 그게 왜 더 빠르고 싸?</span></div>
+  <div class="seg-body">
+    <p class="fy-q">"똑같이 AI인데, 왜 그게 더 빨라?"</p>
+
+    <div class="fy-label">1단계 · 직접 써 보기</div>
+    <textarea class="fy-input" id="fy-2" data-target-sec="120" aria-label="칸 2 내 설명" placeholder="서술형 학생이 답을 쓰는 방식과 객관식 학생이 답하는 방식을 비교해 보세요."></textarea>
+    <div class="fy-row"><span class="fy-count" id="fy-2-count"></span><button type="button" class="fy-check" data-for="fy-2">점검</button></div>
+    <div class="fy-result" id="fy-2-result" hidden></div>
+
+    <div class="fy-label">2단계 · 친구의 꼬리 질문</div>
+    <ol class="fy-gaps">
+      <li><details><summary>"ChatGPT도 짧게 답하라고 하면 빠르지 않아?"</summary><p>빨라지긴 한다. 그래도 한 조각씩 이어 쓰는 방식은 그대로고, 형식을 어기거나 보기에 없는 말을 쓸 수 있어서 프로그램이 한 번 더 확인해야 한다.</p></details></li>
+      <li><details><summary>"얼마나 싼데?"</summary><p>읽는 글 백만 조각(책 몇 권 분량)에 4.2센트, 우리 돈 60원쯤. 쓰는 값은 0원. 쓰는 게 없으니까.</p></details></li>
+      <li><details><summary>"생각할 시간이 없으면 멍청한 거 아냐?"</summary><p>좋은 질문이다. 그게 바로 칸 3의 단점이다.</p></details></li>
+    </ol>
+
+    <div class="fy-label">3단계 · 막혔다면 여기로</div>
+    <div class="fy-src">레슨 <a href="../lessons/0002-trace-one-state.html">0002</a> 2절(④에서 실제로 무슨 일이 일어나나). <a href="../learning-records/0001-single-pass-vs-autoregressive.md">학습 기록 0001</a>: 당신이 이미 스스로 정리한 내용이다.</div>
+
+    <details class="fy-model">
+      <summary>4단계 · 모범 대본 열기</summary>
+      <div class="say">
+        <p>서술형 학생이 답을 쓰는 방식을 보면 알 수 있어. ChatGPT는 글자를 한 조각 쓰고, 지금까지 쓴 걸 다시 읽고, 다음 조각을 써. 답이 백 조각이면 이걸 백 번 반복해. 그래서 답이 길수록 오래 걸리고 비싸.</p>
+        <p>객관식 학생은 문제를 한 번 읽고, 보기마다 "이게 맞을 것 같은 정도"를 한 번에 매기고 끝이야. 다시 읽을 게 없어.</p>
+        <p>그래서 Jev는 답이 0.1초에서 0.5초 사이에 와. 값도 달라. 이런 AI는 보통 읽은 양과 쓴 양으로 돈을 받는데, Jev는 쓰는 게 없으니까 쓴 양 값은 아예 공짜고, 읽은 양 값도 아주 싸.</p>
+        <p>예를 들어 볼게. 고객 문의 하나를 분류하려고 ChatGPT한테 물으면, "이 문의는 결제와 관련된 문제로 보이며, 고객은 중복 청구에 대해…" 하고 몇십 단어를 써야 끝나. 우리가 필요한 건 "결제"라는 한 단어뿐인데 말이야. 프로그램은 그 긴 글에서 다시 "결제"를 찾아내야 하고. Jev는 처음부터 "결제, 84%"만 줘. 하루에 문의가 백만 개 들어오는 회사라면, 이 차이가 서버 비용과 기다리는 시간으로 그대로 쌓여.</p>
+        <p>그리고 문제를 열 개 내도 한꺼번에 풀어. 시험지 한 장에 문제 열 개를 같이 주면, 답 열 개가 같이 나와. 시간은 거의 안 늘어.</p>
+      </div>
+      <div class="fy-breaks"><b>비유가 깨지는 곳.</b> 사람은 보기를 하나씩 따져 보지만, Jev는 계산 한 번으로 모든 보기에 확률을 동시에 나눠 준다. "한 번 읽는다"가 비유보다 더 문자 그대로다.</div>
+    </details>
+  </div>
+</section>
+
+<!-- ───────────── 칸 3 ───────────── -->
+<section class="seg" data-start="210" data-end="330" data-label="3 · 단점은?">
+  <div class="seg-head"><span class="seg-time">3:30–5:30</span><span class="seg-title">3 · 좋은 점만 있어? 단점은?</span></div>
+  <div class="seg-body">
+    <p class="fy-q">"그렇게 좋으면 왜 다 그걸 안 써? 단점이 있겠지."</p>
+
+    <div class="fy-label">1단계 · 직접 써 보기</div>
+    <textarea class="fy-input" id="fy-3" data-target-sec="120" aria-label="칸 3 내 설명" placeholder="객관식 시험의 단점을 떠올려 보세요. 보기에 없는 답, 틀린 보기, 고민할 시간, 이유."></textarea>
+    <div class="fy-row"><span class="fy-count" id="fy-3-count"></span><button type="button" class="fy-check" data-for="fy-3">점검</button></div>
+    <div class="fy-result" id="fy-3-result" hidden></div>
+
+    <div class="fy-label">2단계 · 친구의 꼬리 질문</div>
+    <ol class="fy-gaps">
+      <li><details><summary>"거짓말을 안 한다며? 그럼 항상 맞는 거 아냐?"</summary><p>보기 밖의 말을 지어내지 않을 뿐, 틀린 보기를 고를 수는 있다. "환각 0%"는 측정한 정답률이 아니라 구조상 그렇다는 뜻이다.</p></details></li>
+      <li><details><summary>"한국어는 왜 점수가 낮아?"</summary><p>주로 영어로 공부했기 때문이다. 그래도 한국어에서는 "자신 없음"도 같이 낮게 적어서, 확신도와 실제 정답률은 여전히 잘 맞았다.</p></details></li>
+      <li><details><summary>"틀릴 수 있으면 어떻게 믿어?"</summary><p>믿지 않는 구조로 쓴다. 칸 4다.</p></details></li>
+    </ol>
+
+    <div class="fy-label">3단계 · 막혔다면 여기로</div>
+    <div class="fy-src">레슨 <a href="../lessons/0001-system-one-vs-llm.html">0001</a> 4절(confidence와 캘리브레이션), <a href="request-response-shape.html">치트시트</a> "외워야 할 사실 열 가지". 한국어 수치는 jev-calibration-audit(999문항).</div>
+
+    <details class="fy-model">
+      <summary>4단계 · 모범 대본 열기</summary>
+      <div class="say">
+        <p>단점도 객관식 시험이랑 똑같아.</p>
+        <p>첫째, 보기에 없는 답은 못 써. 이건 장점이기도 해. ChatGPT는 가끔 그럴듯한 거짓말을 지어내는데, Jev는 보기 밖의 답을 아예 못 만드니까, 있지도 않은 팀 이름 같은 걸 지어낼 일이 없어. 회사가 "환각 0%"라고 하는 게 이 뜻이야.</p>
+        <p>둘째, 그렇다고 항상 맞는 건 아니야. 객관식에서도 틀린 보기에 동그라미 칠 수 있잖아.</p>
+        <p>셋째, 오래 고민을 못 해. 요즘 ChatGPT가 어려운 문제를 잘 푸는 비결 중 하나가 "한참 생각하고 답하기"인데, Jev는 문제 보자마자 동그라미를 쳐야 해. 그래서 어려운 문제를 통째로 내면 틀리기 쉬워.</p>
+        <p>예를 들어 "이 스타트업에 투자해도 될까?" 같은 문제를 통째로 내면, 사람도 한참 따져 봐야 하잖아. 시장이 큰지, 기술이 되는지, 경쟁자는 누군지. Jev는 그걸 한 번의 동그라미로 답해야 하니까 엉성해져. 이걸 어떻게 해결하는지가 다음 얘기야.</p>
+        <p>넷째, 왜 그걸 골랐는지 이유를 안 써 줘. 동그라미랑 확신도만 있어.</p>
+        <p>그리고 영어로 공부한 학생이라, 한국어 시험지에서는 점수가 좀 낮아. 측정해 보니 영어 81점, 한국어 75점 정도였어.</p>
+      </div>
+      <div class="fy-breaks"><b>비유가 깨지는 곳.</b> 사람 학생의 "80% 확신"은 느낌이지만, Jev의 확신도는 수백 문제를 모아 놓고 맞춰 보도록 훈련된 숫자다. 다만 그것도 한 문제가 아니라 <em>모아 봤을 때</em>의 이야기다.</div>
+    </details>
+  </div>
+</section>
+
+<!-- ───────────── 칸 4 ───────────── -->
+<section class="seg" data-start="330" data-end="480" data-label="4 · 어떻게 믿고 써?">
+  <div class="seg-head"><span class="seg-time">5:30–8:00</span><span class="seg-title">4 · 틀릴 수 있는 걸 어떻게 믿고 써?</span></div>
+  <div class="seg-body">
+    <p class="fy-q">"틀릴 수도 있고 이유도 안 알려 주면, 그걸 어떻게 믿고 써?"</p>
+
+    <div class="fy-label">1단계 · 직접 써 보기</div>
+    <textarea class="fy-input" id="fy-4" data-target-sec="150" aria-label="칸 4 내 설명" placeholder="시험을 잘 설계하는 선생님을 떠올려 보세요. 어려운 문제를 어떻게 낼지, 학생이 자신 없다고 하면 어떻게 할지."></textarea>
+    <div class="fy-row"><span class="fy-count" id="fy-4-count"></span><button type="button" class="fy-check" data-for="fy-4">점검</button></div>
+    <div class="fy-result" id="fy-4-result" hidden></div>
+
+    <div class="fy-label">2단계 · 친구의 꼬리 질문</div>
+    <ol class="fy-gaps">
+      <li><details><summary>"문제를 다섯 개로 쪼개면 다섯 배 느리고 비싸지?"</summary><p>아니다. 한 시험지에 같이 내서 동시에 푼다. 그 실험에서 비용은 1.7배 정도였고, 백만 번 물어도 5만 원 수준이다.</p></details></li>
+      <li><details><summary>"합격선은 어떻게 정해?"</summary><p>처음엔 깐깐하게 잡고, 실제 데이터를 보며 조정한다. 잘못되면 큰일 나는 작업일수록 합격선을 높인다. 레슨 4에서 다룬다.</p></details></li>
+      <li><details><summary>"쪼개면 무조건 좋아져?"</summary><p>아니다. 합치는 규칙도 틀릴 수 있다. 쪼개기는 정답을 보장하는 게 아니라, 어디서 틀렸는지 보이게 만든다.</p></details></li>
+    </ol>
+
+    <div class="fy-label">3단계 · 막혔다면 여기로</div>
+    <div class="fy-src">레슨 <a href="../lessons/0003-decompose-questions.html">0003</a> 2~3절(실측 600건, 시뮬레이터), 레슨 <a href="../lessons/0002-trace-one-state.html">0002</a> 3~4절(티켓 C가 사람에게 가는 이유).</div>
+
+    <details class="fy-model">
+      <summary>4단계 · 모범 대본 열기</summary>
+      <div class="say">
+        <p>핵심은 Jev를 믿는 게 아니라, 틀려도 괜찮게 쓰는 거야. 선생님이 시험을 잘 설계하는 거랑 비슷해. 여기서 선생님은 Jev를 쓰는 프로그램, 그러니까 우리야. 방법이 두 개 있어.</p>
+        <p>하나, 어려운 문제를 쉬운 문제 여러 개로 쪼개서 내. 실제 실험이 있어. AI 비서가 어떤 작업을 실행하기 전에 "이거 위험해?"라고 한 문제만 물어봤더니, 사용자가 진짜로 시킨 멀쩡한 작업까지 열 개 중 네 개를 막아 버렸어. "데이터 지우기"처럼 겉보기에 무서운 작업이면 다 위험하다고 한 거지.</p>
+        <p>그래서 문제를 쪼갰어. "누가 몰래 끼워 넣은 지시야?", "엉뚱한 곳으로 정보를 보내?", "되돌릴 수 없어?", "사용자가 시킨 범위를 넘어?" 이런 식으로 다섯 개. 그리고 답을 합치는 규칙은 우리가 정했어. "되돌릴 수 없지만 사용자가 시킨 거면, 막지 말고 사람한테 한 번 확인받아." 그랬더니 멀쩡한 작업을 막는 건 0건이 됐어.</p>
+        <p>왜 쪼개면 나아질까? "위험해?"라고만 물으면, 무섭게 생긴 것과 진짜로 위험한 것이 숫자 하나에 뭉개져. 쪼개면 "무섭긴 한데 사용자가 시킨 거"라는 게 따로 보여. 그래야 규칙이 "막을지, 한 번 물어볼지"를 구분할 수 있어.</p>
+        <p>둘, 자신 없다고 하면 사람에게 넘겨. 예를 들어 "결제 문제 48%, 로그인 문제 44%"처럼 갈리면, Jev가 "잘 모르겠어"라고 말하는 거야. 그럼 프로그램이 억지로 고르지 않고 사람 담당자한테 보내.</p>
+        <p>정리하면, 문제는 쉽게 쪼개서 내고, 합치는 규칙과 합격선은 우리가 정하고, 애매하면 사람이 본다. Jev는 그 안에서 빠르게 동그라미 치는 담당이야.</p>
+      </div>
+      <div class="fy-breaks"><b>비유가 깨지는 곳.</b> 진짜 선생님은 학생을 가르쳐 실력을 올리지만, 우리는 Jev를 가르치지 않는다. 바꾸는 건 시험지(질문)와 채점 규칙(코드)뿐이다. 그리고 그 실험은 직접 만든 가상 데이터 600건이었다.</div>
+    </details>
+  </div>
+</section>
+
+<!-- ───────────── 칸 5 ───────────── -->
+<section class="seg" data-start="480" data-end="600" data-label="5 · ChatGPT 대신?">
+  <div class="seg-head"><span class="seg-time">8:00–10:00</span><span class="seg-title">5 · 그래서 ChatGPT 대신 쓰라는 거야?</span></div>
+  <div class="seg-body">
+    <p class="fy-q">"결국 ChatGPT 말고 이걸 쓰라는 거야?"</p>
+
+    <div class="fy-label">1단계 · 직접 써 보기</div>
+    <textarea class="fy-input" id="fy-5" data-target-sec="120" aria-label="칸 5 내 설명" placeholder="서술형이 필요한 일과 객관식이 필요한 일을 나눠 보세요. 숫자는 광고와 실측을 함께. 마지막 한 문장으로 끝내기."></textarea>
+    <div class="fy-row"><span class="fy-count" id="fy-5-count"></span><button type="button" class="fy-check" data-for="fy-5">점검</button></div>
+    <div class="fy-result" id="fy-5-result" hidden></div>
+
+    <div class="fy-label">2단계 · 친구의 꼬리 질문</div>
+    <ol class="fy-gaps">
+      <li><details><summary>"그럼 아무 데나 쓰면 돼?"</summary><p>보기가 정해져 있고, 자주 반복되고, 빨라야 하는 판정에 맞다. 글쓰기, 이유 설명이 필요한 일, 아주 긴 문서 전체, 계산에는 안 맞는다.</p></details></li>
+      <li><details><summary>"193배 빠르다는 건 거짓말이야?"</summary><p>거짓말이라기보다 비교 대상이 가장 크고 비싼 AI였다. 싼 AI와 비교하면 2~3배다. 둘 다 사실이고, 어떤 걸 비교했는지가 다르다.</p></details></li>
+      <li><details><summary>"지금 써 볼 수 있어?"</summary><p>대기 명단에 올려야 하고, 일부 클라우드 서비스에서도 쓸 수 있게 열려 있다.</p></details></li>
+    </ol>
+
+    <div class="fy-label">3단계 · 막혔다면 여기로</div>
+    <div class="fy-src"><a href="talk-10min.html">이전 대본</a>의 ⑤ 자리, ⑥ 정직한 숫자 칸. 유즈케이스 전체는 리서치 노트 <a href="../../../research/jev-use-cases.md">jev-use-cases.md</a>.</div>
+
+    <details class="fy-model">
+      <summary>4단계 · 모범 대본 열기</summary>
+      <div class="say">
+        <p>아니, 대신이 아니라 옆에 두는 거야.</p>
+        <p>서술형이 필요한 일, 그러니까 답장 쓰기, 요약, 설명, 계획 세우기는 여전히 ChatGPT 같은 AI가 해.</p>
+        <p>그런데 서비스 안을 들여다보면, 그 사이사이에 객관식 판정이 엄청 많아. 이 문의는 어느 팀으로? 이 댓글은 스팸이야? 이 작업 실행해도 돼? 이런 게 하루에 수백만 번씩 일어나. 그걸 서술형 학생한테 다 시키면 느리고 비싸니까, 객관식 전문 학생인 Jev한테 맡기는 거지.</p>
+        <p>쇼핑몰을 예로 들면, 리뷰가 올라올 때마다 광고인지, 욕설이 있는지, 개인정보가 들어 있는지를 물을 수 있어. 리뷰 하나에 0.2초, 값은 1원도 안 되는 수준으로.</p>
+        <p>속도가 정말 중요한 곳에도 써. 사람들이 Jev한테 고전 게임 둠을 시켜 봤더니, 1초에 열 번쯤 판단하면서 게임을 했어.</p>
+        <p>숫자는 정직하게 말할게. 회사는 "큰 AI보다 193배 빠르고 444배 싸다"고 발표했어. 그런데 다른 사람들이 가장 싼 작은 AI와 비교해 보니, 2~3배 빠르고 5~7배 싸고, 정확도는 비슷했어. 광고만큼은 아니지만, 수백만 번 반복하는 일이라면 충분히 큰 차이야.</p>
+        <p>한 문장으로 정리할게. Jev는 말하는 AI가 아니라 고르는 AI고, 무엇을 고르게 할지와 고른 걸 어떻게 쓸지는 우리가 정한다.</p>
+      </div>
+      <div class="fy-breaks"><b>비유가 깨지는 곳.</b> 학교에서는 서술형과 객관식 중 하나를 고르지만, 서비스에서는 둘을 한 흐름 안에 같이 쓴다. 서술형 학생(ChatGPT)이 쓴 답안을 객관식 학생(Jev)이 "인용이 맞나?" 하고 검사하기도 한다.</div>
+    </details>
+  </div>
+</section>
+
+<h2>다 쓰고 나서</h2>
+<ol class="fy-gaps">
+  <li>하단 타이머의 "시작"을 누르고, <strong>모범 대본이 아니라 자기가 쓴 글</strong>로 소리 내어 10분을 말한다.</li>
+  <li>말하다 멈칫한 칸, "음…" 하고 단어를 찾은 곳에 표시한다. 그곳이 아직 이해가 덜 된 곳이다.</li>
+  <li>그 칸의 내 글과, 막힌 문장을 나에게 보내 달라. 그 칸만 더 쉬운 말로 같이 고친다.</li>
+</ol>
+<div class="callout">
+  <h4>파인만의 기준</h4>
+  친구가 끝까지 듣고 나서 "아, 그러니까 객관식 문제만 엄청 빨리 푸는 AI고, 문제랑 채점은 우리가 정한다는 거지?"라고 자기 말로 되돌려 줄 수 있으면 성공이다.
+</div>
+
+</article>
+<footer class="lesson-foot">
+  <nav>
+    <a href="talk-10min.html">이전 대본(비계식)</a>
+    <a href="../lessons/0003-decompose-questions.html">레슨 0003</a>
+    <a href="request-response-shape.html">치트시트</a>
+  </nav>
+  <div>파인만식 대본 · 작성 2026-10-05 · 수치 출처는 이전 대본과 레슨 0001~0003의 사이드노트에.</div>
+</footer>
+</div>
+
+<div class="talk-bar" id="talkbar"></div>
+<script src="../assets/talk-timer.js"></script>
+<script src="../assets/feynman.js"></script>
+<script>
+TalkTimer.mount('#talkbar');
+Feynman.setup({
+  concepts: {
+    'fy-1': [
+      { label: '보기(선택지)를 주면 그중 하나를 고른다', re: /(보기|선택지|고르|골라|객관식|동그라미)/ },
+      { label: '글(답장)을 쓰지 않는다', re: /(글을?\s*(안|않|못)|한\s*줄도|서술형|글\s*대신|쓰지\s*않|안\s*써)/ },
+      { label: '몇 % 확신하는지도 같이 알려 준다', re: /(확신|확률|자신|%|퍼센트|프로)/ },
+      { label: '보기는 우리가 정해서 준다', re: /(우리가|내가|사람이|프로그램이).{0,12}(정|만들|주|낸)/ }
+    ],
+    'fy-2': [
+      { label: 'ChatGPT는 한 조각씩 반복해서 쓴다', re: /(한\s*(글자|조각)씩|하나씩|조각마다|글자마다|반복|백\s*번|100번)/ },
+      { label: 'Jev는 한 번 읽고 끝낸다', re: /(한\s*번|한번|단번|한꺼번|곧바로|바로)/ },
+      { label: '그래서 빠르다(0.1~0.5초)', re: /(빠르|빨라|0\.\d|초)/ },
+      { label: '쓰는 값이 없어 싸다', re: /(공짜|무료|0원|싸|저렴|값)/ }
+    ],
+    'fy-3': [
+      { label: '보기에 없는 답은 못 만든다(지어내지 않는다)', re: /(보기\s*(밖|에\s*없)|없는\s*답|지어내|거짓말|환각)/ },
+      { label: '그래도 틀린 보기를 고를 수 있다', re: /(틀린|틀릴|틀려|잘못\s*고|오답)/ },
+      { label: '오래 고민하지 못한다', re: /(고민|생각).{0,12}(못|없|안)/ },
+      { label: '왜 골랐는지 이유를 안 알려 준다', re: /(이유|근거|설명).{0,10}(없|안|못)/ }
+    ],
+    'fy-4': [
+      { label: '어려운 문제를 쉬운 문제 여러 개로 쪼갠다', re: /(쪼개|쪼갠|나눠|나누|여러\s*(개|문제|질문))/ },
+      { label: '자신 없으면 사람에게 넘긴다', re: /(사람|담당자|직원).{0,12}(넘기|보내|맡기|확인)/ },
+      { label: '합치는 규칙·합격선은 우리가 정한다', re: /(규칙|합격선|기준|채점)/ },
+      { label: '실제 사례(정상 작업 막기 → 0건)', re: /(열\s*개\s*중|40|39|네\s*개|0건|0개|실험)/ }
+    ],
+    'fy-5': [
+      { label: 'ChatGPT를 대신하지 않고 옆에 둔다', re: /(대신(하지|이)?\s*(않|아니|안)|옆에|같이|함께)/ },
+      { label: '자주 반복되는 판정(분류·스팸·실행 여부)에 쓴다', re: /(어느\s*팀|스팸|분류|판정|수백만|반복|실행해도)/ },
+      { label: '광고 숫자와 실제 측정을 함께 말한다', re: /(193|444|광고|발표|실제로는|다른\s*사람|2\s*~\s*3|5\s*~\s*7)/ },
+      { label: '한 문장으로 맺는다(고르는 AI, 우리가 정한다)', re: /(고르는\s*AI|말하는\s*AI|우리가\s*정)/ }
+    ]
+  },
+  jargon: [
+    { term: '트랜스포머', re: /트랜스포머|transformer/i, plain: '빼거나 "AI"라고만' },
+    { term: '신경망', re: /신경망|neural/i, plain: '"AI의 머리"' },
+    { term: '토큰', re: /토큰|token/i, plain: '글자 조각' },
+    { term: '자기회귀', re: /자기\s*회귀|autoregress/i, plain: '한 조각씩 이어 쓰기' },
+    { term: 'state', re: /\bstate\b|스테이트/i, plain: '시험지의 지문, 판단 재료' },
+    { term: 'Choice / Score / Noul', re: /\b(choice|score|noul)\b|누울/i, plain: '객관식 / 점수 척도 / O·X' },
+    { term: 'confidence', re: /confidence|컨피던스/i, plain: '확신도' },
+    { term: '캘리브레이션', re: /캘리브레이션|calibrat|보정/i, plain: '"80%라고 한 것들이 실제로 80% 맞는다"' },
+    { term: 'RLCD / RLHF', re: /RLCD|RLHF|강화\s*학습/i, plain: '빼거나 "그렇게 훈련됐다"' },
+    { term: '임계값', re: /임계|threshold/i, plain: '합격선' },
+    { term: '에이전트 / 툴 호출', re: /에이전트|agent|툴\s*호출|tool\s*call/i, plain: 'AI 비서 / AI 비서가 하려는 작업' },
+    { term: '스키마', re: /스키마|schema/i, plain: '보기 목록' },
+    { term: 'API / 레이턴시', re: /\bAPI\b|레이턴시|latency/i, plain: '빼거나 "응답 시간"' },
+    { term: '프롬프트', re: /프롬프트|prompt/i, plain: '질문, 지시문' },
+    { term: '파라미터 / 추론', re: /파라미터|parameter|추론/i, plain: '빼거나 "생각"' }
+  ]
+});
+</script>
+</body>
+</html>
